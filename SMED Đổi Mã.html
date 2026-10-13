@@ -1,0 +1,1284 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>SMED Đổi Mã</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: một cột làm việc rộng tối đa 1080px, thanh tab trên cùng, ba màn hình Kế hoạch / Thực thi / Lịch sử.
+   Song ngữ: dòng Việt là chính, dòng English nhỏ và nhạt bên dưới (hoặc sau dấu gạch chéo khi chỗ hẹp).
+   Màu: xanh thép làm điểm nhấn, cam hổ phách cho bước NỘI BỘ (máy dừng), xanh lục lam cho bước NGOẠI BỘ (máy còn chạy). */
+:root {
+  --bg: #eff1ee;
+  --surface: #ffffff;
+  --ink: #15212b;
+  --muted: #5a6a76;
+  --line: #d3d9d6;
+  --accent: #1d4f7a;
+  --on-accent: #ffffff;
+  --int: #b45309;
+  --ext: #0e7c6b;
+  --good: #15803d;
+  --bad: #c0262d;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11181d; --surface: #19222a; --ink: #e5ecef; --muted: #93a2ad; --line: #2b3741;
+    --accent: #72b8e8; --on-accent: #0a1a25; --int: #f0a347; --ext: #4cc2ae; --good: #5bc27e; --bad: #ff7b7f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11181d; --surface: #19222a; --ink: #e5ecef; --muted: #93a2ad; --line: #2b3741;
+  --accent: #72b8e8; --on-accent: #0a1a25; --int: #f0a347; --ext: #4cc2ae; --good: #5bc27e; --bad: #ff7b7f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 40px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: .01em; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+
+/* bilingual text */
+.bi { display: inline-flex; flex-direction: column; vertical-align: top; }
+.bi .en { font-size: .76em; font-weight: 400; opacity: .78; letter-spacing: 0; text-transform: none; font-family: var(--font-body); line-height: 1.25; }
+.bi.inl { display: inline; }
+.bi.inl .en { display: inline; font-size: 1em; opacity: .72; text-transform: inherit; letter-spacing: inherit; font-weight: inherit; }
+.bi.inl .en::before { content: " / "; }
+.num .bi, .xs-time .bi { align-items: flex-end; }
+.btn .bi, .chip .bi, .tab .bi { align-items: center; }
+.tab .bi { align-items: flex-start; }
+
+/* header */
+.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; }
+.brand h1 { font-size: 34px; line-height: 1; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+.brand h1 .en { font-size: 16px; font-weight: 500; letter-spacing: .06em; opacity: .75; }
+.brand p { margin: 6px 0 0; color: var(--muted); font-size: 13px; max-width: 70ch; }
+.brand p .en { font-size: 12px; }
+.lang { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--surface); }
+.lang button { border: 0; background: none; padding: 7px 12px; font-size: 13px; font-weight: 500; min-height: 34px; color: var(--muted); }
+.lang button + button { border-left: 1px solid var(--line); }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); margin-bottom: 18px; overflow-x: auto; }
+.tab { background: none; border: 0; padding: 8px 16px; font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; text-align: left; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--bad); animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+@media (prefers-reduced-motion: reduce) { .dot { animation: none; } .bar > i { transition: none; } }
+
+/* panels */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.row > * { min-width: 0; }
+.grow { flex: 1 1 200px; }
+.h2 { font-size: 22px; text-transform: uppercase; letter-spacing: .04em; }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.badge-ex { font-family: var(--font-body); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; border: 1px solid var(--line); color: var(--muted); border-radius: 3px; padding: 1px 6px; vertical-align: middle; }
+
+/* controls */
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 6px 14px; font-weight: 500; min-height: 40px; text-align: center; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: var(--bad); }
+.btn.danger.armed { background: var(--bad); color: #fff; border-color: var(--bad); }
+.btn.big { min-height: 56px; padding: 8px 28px; font-size: 17px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.btn.sm { padding: 4px 10px; min-height: 30px; font-size: 13px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field > span { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+input[type=text], input[type=number], select { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; min-height: 38px; }
+input:focus, select:focus { border-color: var(--accent); }
+.meta { display: grid; grid-template-columns: 1.5fr 1fr 1.4fr 1.1fr 1fr; gap: 12px; }
+
+/* chips */
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 3px; border: 1px solid transparent; }
+.chip.I { color: var(--int); background: color-mix(in srgb, var(--int) 13%, var(--surface)); border-color: color-mix(in srgb, var(--int) 35%, var(--surface)); }
+.chip.E { color: var(--ext); background: color-mix(in srgb, var(--ext) 13%, var(--surface)); border-color: color-mix(in srgb, var(--ext) 35%, var(--surface)); }
+.chip.good { color: var(--good); background: color-mix(in srgb, var(--good) 13%, var(--surface)); }
+.chip.bad { color: var(--bad); background: color-mix(in srgb, var(--bad) 13%, var(--surface)); }
+button.chip { cursor: pointer; width: 100%; justify-content: center; min-height: 38px; font-size: 13px; }
+
+/* summary tiles */
+.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tile { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; background: var(--surface); }
+.tile .lbl { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.tile .val { font-family: var(--font-display); font-size: 46px; font-weight: 600; line-height: 1.05; margin-top: 2px; }
+.tile .val small { font-size: 20px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+.tile .sub { margin-top: 4px; min-height: 22px; }
+.tile.I { border-top: 4px solid var(--int); }
+.tile.E { border-top: 4px solid var(--ext); }
+.tile.N { border-top: 4px solid var(--line); }
+.hint { margin: 12px 0 0; padding: 10px 12px; border-left: 4px solid var(--int); background: color-mix(in srgb, var(--int) 8%, var(--surface)); font-size: 14px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+
+/* timeline */
+.tl-scroll { overflow-x: auto; margin-top: 16px; }
+.tl { position: relative; min-width: 560px; padding-top: 22px; padding-bottom: 24px; }
+.lane { position: relative; height: 40px; margin-bottom: 8px; background: color-mix(in srgb, var(--line) 35%, var(--surface)); border-radius: 3px; }
+.blk { position: absolute; top: 0; bottom: 0; padding: 0 6px; display: flex; align-items: center; font-size: 12px; font-weight: 500; color: #fff; border-right: 2px solid var(--surface); overflow: hidden; }
+.blk span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.blk.I { background: var(--int); }
+.blk.E { background: var(--ext); }
+:root[data-theme="dark"] .blk { color: #0b1217; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .blk { color: #0b1217; } }
+.mark { position: absolute; top: 14px; bottom: 16px; width: 0; border-left: 2px solid var(--ink); }
+.mark.t { border-left: 2px dashed var(--bad); }
+.mark b { position: absolute; font-size: 11px; font-weight: 600; white-space: nowrap; text-transform: uppercase; letter-spacing: .04em; }
+.mark.s b { top: -16px; left: 4px; }
+.mark.t b { bottom: -18px; left: 4px; color: var(--bad); }
+.legend { display: flex; gap: 6px 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+
+/* plan steps */
+.steps { display: flex; flex-direction: column; gap: 8px; }
+.srow, .srow-head { display: grid; grid-template-columns: 30px minmax(0, 1fr) 160px 90px 150px 108px; gap: 8px; align-items: center; }
+.srow { padding: 8px; border: 1px solid var(--line); border-radius: 6px; border-left-width: 5px; background: var(--surface); }
+.srow.I { border-left-color: var(--int); }
+.srow.E { border-left-color: var(--ext); }
+.srow .no { font-family: var(--font-mono); font-weight: 600; color: var(--muted); text-align: center; }
+.srow .acts { display: flex; gap: 4px; justify-content: flex-end; }
+.ib { width: 32px; height: 32px; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; line-height: 1; }
+.ib:hover { border-color: var(--muted); }
+.ib[disabled] { opacity: .35; cursor: default; }
+.srow-head { padding: 0 8px 4px 13px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.empty { text-align: center; padding: 36px 16px; color: var(--muted); }
+.empty h3 { color: var(--ink); font-size: 24px; margin-bottom: 6px; }
+.empty .bi { align-items: center; }
+.empty p { margin: 0 0 16px; }
+
+/* execution */
+.clocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.clock { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; background: var(--surface); }
+.clock .lbl { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.clock .big { font-family: var(--font-mono); font-weight: 600; font-size: 44px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.clock.down { border-top: 4px solid var(--int); }
+.clock.down.over .big { color: var(--bad); }
+.bar { height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--line) 60%, var(--surface)); overflow: hidden; margin-top: 8px; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--int); transition: width .4s linear; }
+.over .bar > i { background: var(--bad); }
+.xgroup h3 { font-size: 19px; text-transform: uppercase; letter-spacing: .04em; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.xgroup h3 .note { font-family: var(--font-body); font-size: 13px; text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--muted); }
+.xs { display: grid; grid-template-columns: 30px minmax(0, 1fr) 150px 130px; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-left-width: 5px; border-radius: 6px; background: var(--surface); list-style: none; }
+.xs.I { border-left-color: var(--int); }
+.xs.E { border-left-color: var(--ext); }
+.xs.running { box-shadow: 0 0 0 2px var(--accent); }
+.xs.done { background: color-mix(in srgb, var(--good) 5%, var(--surface)); }
+.xs .no { font-family: var(--font-mono); font-weight: 600; color: var(--muted); text-align: center; }
+.xs-name { font-weight: 500; }
+.xs-meta { font-size: 13px; color: var(--muted); display: flex; gap: 4px 10px; flex-wrap: wrap; align-items: center; margin-top: 2px; }
+.xs-time { text-align: right; }
+.xs-time .t { font-family: var(--font-mono); font-weight: 600; font-size: 22px; font-variant-numeric: tabular-nums; }
+.xs-time .v { display: block; font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.v.late, .t.late { color: var(--bad); }
+.v.ok { color: var(--good); }
+.xs-act .btn { width: 100%; }
+.xs .why { grid-column: 2 / -1; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.xs .why select { width: auto; min-width: 220px; }
+.xlist { display: flex; flex-direction: column; gap: 8px; padding: 0; margin: 0; }
+.xlist.prev .xs { grid-template-columns: 30px minmax(0, 1fr) auto; }
+.finish { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+
+/* history */
+.chart-wrap { overflow-x: auto; }
+svg.chart { width: 100%; min-width: 520px; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--font-body); font-size: 11px; }
+.chart .val { fill: var(--ink); font-family: var(--font-mono); font-weight: 600; font-size: 12px; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .tgt { stroke: var(--bad); stroke-width: 2; }
+.chart .bar-ok { fill: var(--good); }
+.chart .bar-bad { fill: var(--int); }
+.tbl-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 680px; }
+th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 8px 10px; border-bottom: 2px solid var(--line); vertical-align: bottom; }
+td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.num, th.num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+th.num { font-family: var(--font-body); }
+tr.run { cursor: pointer; }
+tr.run:hover td { background: color-mix(in srgb, var(--line) 25%, var(--surface)); }
+tr.detail td { background: color-mix(in srgb, var(--line) 18%, var(--surface)); }
+.dtl { display: grid; gap: 4px; font-size: 13px; }
+.dtl .late { color: var(--bad); }
+.dtl .ok { color: var(--good); }
+.dtl > div { display: grid; grid-template-columns: minmax(0, 1fr) 80px 80px 80px; gap: 8px; }
+.dtl .r { text-align: right; }
+
+/* planned / unplanned, checklist, catalogs */
+.chip.pl { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); border-color: color-mix(in srgb, var(--accent) 35%, var(--surface)); }
+.chip.un { color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--surface)); border-color: color-mix(in srgb, var(--bad) 35%, var(--surface)); }
+.chip.opt { color: var(--muted); border-color: var(--line); }
+.chklist, .cllist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.chkbox { margin-top: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: color-mix(in srgb, var(--line) 15%, var(--surface)); }
+.chkbox h3 { font-size: 18px; text-transform: uppercase; letter-spacing: .04em; }
+.chkrow { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.chkrow input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; accent-color: var(--accent); }
+.clrow { display: flex; gap: 8px; align-items: center; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.clrow .clt { flex: 1; min-width: 0; }
+.clrow button.chip { width: auto; min-height: 30px; padding: 2px 10px; }
+.arrow { align-self: flex-end; padding-bottom: 8px; color: var(--muted); font-size: 18px; }
+.chkres { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; align-items: center; }
+.chart .bar-un { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.lnk { margin-top: 3px; font-size: 11px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lnk.ok { color: var(--ext); }
+.lnk.mod { color: var(--int); }
+.lnk-btn { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); text-decoration: underline; cursor: pointer; text-transform: none; letter-spacing: 0; }
+.tplbar { margin-top: 12px; padding: 12px; border: 1px dashed var(--line); border-radius: 6px; }
+.tplbar select { width: auto; flex: 1 1 240px; }
+
+/* settings */
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0 0 12px; padding: 0; }
+.mchip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 4px; padding: 2px 4px 2px 10px; background: var(--surface); }
+.mchip.fixed { padding-right: 10px; color: var(--muted); background: color-mix(in srgb, var(--line) 25%, var(--surface)); }
+.mchip .ib { width: 26px; height: 26px; border: 0; }
+textarea { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; font-family: var(--font-mono); font-size: 12px; resize: vertical; }
+textarea:focus { border-color: var(--accent); }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 4px; font-weight: 500; z-index: 10; max-width: calc(100vw - 32px); }
+.foot { margin-top: 24px; font-size: 12px; color: var(--muted); max-width: 90ch; }
+
+@media (max-width: 860px) {
+  .meta { grid-template-columns: 1fr 1fr; }
+  .meta .field:first-child { grid-column: 1 / -1; }
+  .tiles, .clocks, .grid2 { grid-template-columns: 1fr; }
+  .srow-head { display: none; }
+  .srow { grid-template-columns: 30px minmax(0, 1fr) 100px; grid-template-areas: "no name name" ". owner owner" ". type min" ". acts acts"; }
+  .srow .no { grid-area: no; }
+  .srow .f-name { grid-area: name; }
+  .srow .f-owner { grid-area: owner; }
+  .srow .f-min { grid-area: min; }
+  .srow .f-type { grid-area: type; }
+  .srow .acts { grid-area: acts; justify-content: flex-start; }
+  .xs { grid-template-columns: 30px minmax(0, 1fr); }
+  .xs-time { grid-column: 2; text-align: left; }
+  .xs-time .bi { align-items: flex-start; }
+  .xs-act { grid-column: 2; }
+  .xs .why { grid-column: 2; }
+  .xlist.prev .xs { grid-template-columns: 30px minmax(0, 1fr); }
+  .brand h1 { font-size: 28px; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top" id="top"></header>
+  <nav class="tabs" id="nav" role="tablist"></nav>
+  <main id="main"></main>
+  <p class="foot" id="foot"></p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'smed.v2', OLD_KEY = 'smed.v1';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
+  function num(v) { return Number(v) || 0; }
+
+  /* ---------- từ điển Việt / English ---------- */
+  var D = {
+    'app.title': ['SMED Đổi Mã', 'SMED Changeover'],
+    'app.sub': ['Lập kế hoạch đổi mã, bấm giờ từng bước và so sánh với kế hoạch để rút ngắn thời gian dừng chuyền.', 'Plan the changeover, time each step and compare it with the plan to cut line downtime.'],
+    'foot': ['Dữ liệu được lưu trong trình duyệt này. Thời gian dừng chuyền tính từ lúc bắt đầu bước nội bộ đầu tiên đến lúc xong bước nội bộ cuối cùng.', 'Data is stored in this browser. Downtime runs from the start of the first internal step to the end of the last internal step.'],
+    'tab.plan': ['Kế hoạch', 'Plan'], 'tab.exec': ['Thực thi', 'Execute'], 'tab.hist': ['Lịch sử', 'History'],
+    'tab.live': ['Đang đổi mã', 'Changeover in progress'],
+    'example': ['Ví dụ', 'Example'],
+    'unit.min': ['phút', 'min'], 'unit.short': ['ph', 'min'],
+    'type.I': ['Nội bộ', 'Internal'], 'type.E': ['Ngoại bộ', 'External'],
+    'type.Is': ['Nội', 'Int'], 'type.Es': ['Ngoại', 'Ext'],
+    'to': ['sang', 'to'],
+    'unnamed.step': ['Bước chưa đặt tên', 'Unnamed step'], 'unnamed.plan': ['Kế hoạch chưa đặt tên', 'Unnamed plan'],
+
+    'empty.plan.t': ['Chưa có kế hoạch đổi mã', 'No changeover plan yet'],
+    'empty.plan.d': ['Tạo kế hoạch đầu tiên, liệt kê các bước và đánh dấu bước nào làm khi chuyền còn chạy (ngoại bộ), bước nào phải dừng chuyền (nội bộ).', 'Create your first plan, list the steps and mark which are done while the line runs (external) and which need the line stopped (internal).'],
+    'btn.createPlan': ['Tạo kế hoạch', 'Create plan'],
+    'plan.select': ['Kế hoạch', 'Plan'], 'plan.new': ['Kế hoạch mới', 'New plan'], 'plan.dup': ['Nhân bản', 'Duplicate'],
+    'plan.del': ['Xóa', 'Delete'], 'plan.del2': ['Bấm lần nữa để xóa', 'Click again to delete'],
+    'plan.newName': ['Kế hoạch đổi mã mới', 'New changeover plan'], 'plan.copy': [' (bản sao)', ' (copy)'],
+    'meta.h': ['Thông tin đổi mã', 'Changeover details'],
+    'f.name': ['Tên kế hoạch', 'Plan name'], 'f.machine': ['Chuyền', 'Line'], 'f.from': ['Từ mã', 'From style'], 'f.to': ['Sang mã', 'To style'],
+    'f.target': ['Mục tiêu dừng chuyền (phút)', 'Downtime target (min)'],
+    'f.operator': ['Người phụ trách ca', 'Shift lead'], 'ph.name': ['Họ tên', 'Full name'],
+    'sum.h': ['Tổng hợp kế hoạch', 'Plan summary'],
+    'tile.int': ['Chuyền dừng (bước nội bộ)', 'Line stopped (internal)'],
+    'tile.ext': ['Chuẩn bị khi chuyền còn chạy', 'Prep while running (external)'],
+    'tile.total': ['Tổng công việc', 'Total work'],
+    'st.ok': ['Đạt mục tiêu {t} phút', 'On target ({t} min)'],
+    'st.over': ['Vượt {d} phút so với mục tiêu {t}', '{d} min over the {t} min target'],
+    'st.none': ['Chưa đặt mục tiêu', 'No target set'],
+    'sub.ext': ['{n} bước ngoại bộ', '{n} external steps'],
+    'sub.total': ['{n} bước, {i} nội bộ', '{n} steps, {i} internal'],
+    'hint': ['Cần giảm {d} phút. Xem hai bước nội bộ dài nhất có làm trước khi dừng chuyền được không:', 'Need to cut {d} min. Check whether the two longest internal steps can be done before stopping the line:'],
+    'hint.btn': ['{name} ({m} ph): chuyển sang ngoại bộ', '{name} ({m} min): move to external'],
+    'lg.ext': ['Ngoại bộ: làm khi chuyền còn chạy', 'External: done while the line runs'],
+    'lg.int': ['Nội bộ: phải dừng chuyền', 'Internal: line must be stopped'],
+    'tl.stop': ['Dừng chuyền', 'Stop'], 'tl.target': ['Mục tiêu {t} ph', 'Target {t} min'],
+    'steps.h': ['Các bước đổi mã', 'Changeover steps'],
+    'steps.tip': ['Bấm nhãn Nội bộ / Ngoại bộ để chuyển loại bước', 'Click the Internal / External label to switch the step type'],
+    'col.step': ['Bước công việc', 'Task'], 'col.owner': ['Người phụ trách', 'Owner'], 'col.min': ['Phút', 'Min'], 'col.type': ['Loại', 'Type'],
+    'ph.step': ['Mô tả bước công việc', 'Describe the task'], 'ph.owner': ['Người phụ trách', 'Owner'],
+    'aria.step': ['Tên bước', 'Step name'], 'aria.min': ['Thời gian kế hoạch (phút)', 'Planned time (min)'],
+    'type.toggle': ['Bấm để chuyển nội bộ / ngoại bộ', 'Click to switch internal / external'],
+    'aria.up': ['Chuyển lên', 'Move up'], 'aria.down': ['Chuyển xuống', 'Move down'], 'aria.del': ['Xóa bước', 'Delete step'],
+    'steps.empty': ['Chưa có bước nào.', 'No steps yet.'],
+    'add.E': ['+ Bước ngoại bộ', '+ External step'], 'add.I': ['+ Bước nội bộ', '+ Internal step'],
+    'go.exec': ['Thực thi kế hoạch này', 'Execute this plan'],
+
+    'exec.nopl.t': ['Chưa có kế hoạch để thực thi', 'No plan to execute'],
+    'exec.nopl.d': ['Tạo kế hoạch ở tab Kế hoạch trước.', 'Create a plan in the Plan tab first.'],
+    'btn.openPlan': ['Mở tab Kế hoạch', 'Open Plan tab'],
+    'exec.start.h': ['Bắt đầu đổi mã', 'Start changeover'],
+    'exec.info': ['{m} · {f} sang {t} · chuyền dừng theo kế hoạch {i} phút.', '{m} · {f} to {t} · planned downtime {i} min.'],
+    'exec.info.t': ['{m} · {f} sang {t} · chuyền dừng theo kế hoạch {i} phút, mục tiêu {g} phút.', '{m} · {f} to {t} · planned downtime {i} min, target {g} min.'],
+    'btn.startRun': ['Bắt đầu đổi mã', 'Start changeover'],
+    'exec.steps.h': ['Các bước sẽ thực hiện', 'Steps to perform'],
+    'exec.nosteps': ['Kế hoạch chưa có bước nào.', 'This plan has no steps.'],
+    'clk.total': ['Tổng thời gian đổi mã', 'Total changeover time'],
+    'clk.started': ['Bắt đầu {t}', 'Started {t}'],
+    'clk.down': ['Chuyền dừng', 'Line stopped'],
+    'clk.target': ['Mục tiêu {t}', 'Target {t}'], 'clk.noTarget': ['Chưa đặt mục tiêu', 'No target set'],
+    'clk.prog': ['Tiến độ', 'Progress'], 'clk.progSub': ['bước hoàn thành', 'steps completed'],
+    'lead': ['Phụ trách: {n}', 'Lead: {n}'],
+    'grp.E': ['Làm khi chuyền còn chạy', 'Done while the line runs'],
+    'grp.I': ['Chuyền dừng trong lúc làm', 'Line is stopped during these'],
+    'fin.all': ['Đã xong tất cả các bước. Hoàn tất để lưu kết quả vào lịch sử.', 'All steps are done. Finish to save the result to history.'],
+    'fin.left': ['Còn {n} bước chưa xong.', '{n} steps remaining.'],
+    'run.cancel': ['Hủy lần đổi mã', 'Cancel changeover'], 'run.cancel2': ['Bấm lần nữa để hủy', 'Click again to cancel'],
+    'run.finish': ['Hoàn tất đổi mã', 'Finish changeover'],
+    'step.start': ['Bắt đầu', 'Start'], 'step.done': ['Xong', 'Done'], 'step.reopen': ['Mở lại', 'Reopen'],
+    'plan.t': ['Kế hoạch {t}', 'Plan {t}'],
+    'late.by': ['Chậm {t}. Lý do:', 'Late by {t}. Reason:'], 'reason.none': ['Chưa chọn', 'Not selected'],
+    'reason.wait_fabric': ['Chờ vải', 'Waiting for fabric'],
+    'reason.wait_tool': ['Chờ dụng cụ hoặc dao', 'Waiting for tools or blade'],
+    'reason.cut_file': ['Lỗi file cắt', 'Cut file error'],
+    'reason.machine': ['Lỗi thiết bị', 'Equipment fault'],
+    'reason.people': ['Thiếu người', 'Short of people'],
+    'reason.approval': ['Chờ duyệt chi tiết đầu', 'Waiting for first-part approval'],
+    'reason.other': ['Khác', 'Other'],
+
+    'hist.empty.t': ['Chưa có lần đổi mã nào', 'No changeovers yet'],
+    'hist.empty.d': ['Kết quả sẽ xuất hiện ở đây sau khi bạn hoàn tất một lần đổi mã ở tab Thực thi.', 'Results appear here after you finish a changeover in the Execute tab.'],
+    'tile.count': ['Số lần đổi mã', 'Changeovers'], 'sub.hit': ['{n} lần đạt mục tiêu', '{n} on target'],
+    'tile.avg': ['Chuyền dừng trung bình', 'Average downtime'], 'sub.best': ['Tốt nhất {m} phút', 'Best {m} min'],
+    'tile.last': ['Lần gần nhất', 'Latest'],
+    'chip.ok': ['Đạt mục tiêu', 'On target'], 'chip.over': ['Vượt {d} phút', '{d} min over'],
+    'chip.pass': ['Đạt', 'Pass'], 'chip.overS': ['+{d} ph', '+{d} min'],
+    'chart.h': ['Thời gian chuyền dừng theo từng lần đổi mã', 'Line downtime per changeover'],
+    'chart.aria': ['Biểu đồ thời gian chuyền dừng theo từng lần đổi mã, đơn vị phút', 'Chart of line downtime per changeover, in minutes'],
+    'lg.ok': ['Đạt mục tiêu', 'On target'], 'lg.bad': ['Vượt mục tiêu', 'Over target'], 'lg.tgt': ['Vạch mục tiêu', 'Target line'],
+    'runs.h': ['Các lần đổi mã', 'Changeover log'], 'clear.ex': ['Xóa dữ liệu ví dụ', 'Clear example data'],
+    'th.when': ['Thời điểm', 'Date / time'], 'th.machine': ['Chuyền', 'Line'], 'th.style': ['Mã hàng', 'Style'],
+    'th.plan': ['Kế hoạch (ph)', 'Plan (min)'], 'th.actual': ['Thực tế (mm:ss)', 'Actual (mm:ss)'],
+    'th.target': ['Mục tiêu (ph)', 'Target (min)'], 'th.result': ['Kết quả', 'Result'],
+    'dtl.step': ['Bước', 'Step'], 'dtl.plan': ['Kế hoạch', 'Plan'], 'dtl.actual': ['Thực tế', 'Actual'], 'dtl.diff': ['Chênh', 'Diff'],
+    'dtl.noex': ['Dữ liệu ví dụ không có chi tiết từng bước.', 'Example data has no step detail.'],
+
+    'tab.set': ['Cài đặt', 'Settings'],
+    'set.lang.h': ['Ngôn ngữ', 'Language'], 'set.theme.h': ['Giao diện', 'Appearance'],
+    'theme.auto': ['Theo thiết bị', 'Match device'], 'theme.light': ['Sáng', 'Light'], 'theme.dark': ['Tối', 'Dark'],
+    'set.mach.h': ['Danh sách chuyền', 'Lines'],
+    'set.mach.d': ['Các chuyền này xuất hiện khi chọn chuyền trong kế hoạch.', 'These lines appear when you choose a line in a plan.'],
+    'set.mach.add': ['Thêm chuyền', 'Add line'], 'ph.mach': ['Tên chuyền, ví dụ Chuyền 5', 'Line name, e.g. Line 5'], 'aria.rm': ['Xóa', 'Remove'],
+    'line.choose': ['Chọn chuyền', 'Select line'], 'line.manage': ['Quản lý danh sách chuyền trong Cài đặt', 'Manage the list of lines in Settings'],
+    'line.none': ['Chưa có chuyền, thêm ở tab Cài đặt', 'No lines yet, add them in Settings'],
+    'kind.planned': ['Có kế hoạch', 'Planned'], 'kind.unplanned': ['Không có kế hoạch', 'Unplanned'],
+    'f.kind': ['Loại chuyển đổi', 'Changeover type'], 'f.model': ['Chuyển đổi Model', 'Model changeover'],
+    'model.choose': ['Chọn chuyển đổi Model', 'Select model changeover'],
+    'model.none': ['Chưa có Model, thêm ở tab Cài đặt', 'No models yet, add them in Settings'],
+    'person.none': ['Chưa phân công', 'Unassigned'],
+    'set.model.h': ['Danh mục chuyển đổi Model', 'Model changeover list'],
+    'set.model.d': ['Mỗi mục là một cặp Model A ➔ Model B. Danh mục này dùng để chọn trong kế hoạch và khi thực thi.', 'Each entry is a Model A ➔ Model B pair. It is used when choosing in a plan and when executing.'],
+    'set.model.a': ['Model A (từ)', 'Model A (from)'], 'set.model.b': ['Model B (sang)', 'Model B (to)'],
+    'set.model.add': ['Thêm', 'Add'], 'set.model.rev': ['Thêm cả chiều ngược lại (B ➔ A)', 'Also add the reverse (B ➔ A)'],
+    'set.model.empty': ['Chưa có cặp Model nào.', 'No model pairs yet.'],
+    't.modelAdded': ['Đã thêm {n} chuyển đổi', 'Added {n} changeover(s)'],
+    't.modelBad': ['Nhập hai Model khác nhau và chưa có trong danh mục', 'Enter two different models that are not already in the list'],
+    'set.chk.h': ['Danh mục Checklist kiểm tra', 'Inspection checklist'],
+    'set.chk.d': ['Các việc cần kiểm tra trước khi bắt đầu đổi mã. Phải tích hết mục bắt buộc thì mới bắt đầu được.', 'Checks to complete before a changeover starts. All required items must be ticked before you can start.'],
+    'set.chk.add': ['Thêm mục', 'Add item'], 'ph.chk': ['Nội dung kiểm tra, ví dụ Dao đã kiểm tra', 'Check item, e.g. Blade inspected'],
+    'set.chk.empty': ['Chưa có mục kiểm tra nào.', 'No check items yet.'],
+    'chk.req': ['Bắt buộc', 'Required'], 'chk.opt': ['Không bắt buộc', 'Optional'], 'chk.toggle': ['Bấm để đổi giữa bắt buộc và không bắt buộc', 'Click to switch required / optional'],
+    'exec.chk.h': ['Checklist trước khi đổi mã', 'Pre-changeover checklist'],
+    'exec.chk.prog': ['{d}/{t} mục bắt buộc đã xong', '{d}/{t} required items done'],
+    'exec.chk.block': ['Tích hết các mục bắt buộc để bắt đầu.', 'Tick all required items to start.'],
+    'chk.res': ['Checklist: {d}/{t}', 'Checklist: {d}/{t}'],
+    'set.ppl.h': ['Danh mục người phụ trách', 'Owners'],
+    'set.ppl.d': ['Họ tên hoặc tổ, bộ phận. Dùng để phân công cho từng bước và cho người phụ trách ca.', 'People, teams or departments. Used to assign each step and the shift lead.'],
+    'set.ppl.add': ['Thêm người phụ trách', 'Add owner'], 'ph.ppl': ['Họ tên hoặc tổ, ví dụ Nguyễn Văn A', 'Name or team, e.g. Nguyen Van A'],
+    'set.ppl.empty': ['Chưa có người phụ trách nào.', 'No owners yet.'],
+    'set.def.kind': ['Loại chuyển đổi mặc định cho kế hoạch mới', 'Default changeover type for new plans'],
+    'hist.filter': ['Loại', 'Type'], 'filter.all': ['Tất cả', 'All'],
+    'hist.none.t': ['Không có lần đổi mã nào thuộc loại này', 'No changeovers of this type'],
+    'sub.kinds': ['{p} có kế hoạch, {u} không có kế hoạch', '{p} planned, {u} unplanned'],
+    'th.kind': ['Loại', 'Type'], 'lg.un': ['Không có kế hoạch (viền nét đứt)', 'Unplanned (dashed outline)'],
+    'set.tpl.h': ['Các bước đổi mã mặc định', 'Default changeover steps'],
+    'set.tpl.d': ['Bộ bước chuẩn dùng cho kế hoạch mới. Mỗi bước trong kế hoạch được liên kết với bước mặc định tương ứng, nên bạn đồng bộ lại được khi thay đổi tiêu chuẩn.', 'The standard set of steps used for new plans. Each plan step stays linked to its default, so you can re-sync when the standard changes.'],
+    'tpl.sum': ['{n} bước · nội bộ {i} phút · ngoại bộ {e} phút', '{n} steps · internal {i} min · external {e} min'],
+    'tpl.empty': ['Chưa có bước mặc định nào. Kế hoạch mới sẽ chỉ có hai dòng trống.', 'No default steps yet. New plans will start with two blank rows.'],
+    'lnk.ok': ['Theo mặc định', 'Matches default'], 'lnk.mod': ['Khác mặc định', 'Differs from default'], 'lnk.reset': ['Đặt lại', 'Reset'],
+    'tpl.none': ['Đã có đủ các bước mặc định', 'All default steps are in the plan'],
+    'tpl.nolib': ['Chưa có bước mặc định, thêm ở Cài đặt', 'No default steps, add them in Settings'],
+    'tpl.pick': ['Chọn bước mặc định để thêm', 'Choose a default step to add'],
+    'tpl.add': ['Thêm bước này', 'Add this step'], 'tpl.addAll': ['Thêm {n} bước mặc định còn thiếu', 'Add {n} missing default steps'],
+    'tpl.sync': ['Đồng bộ {n} bước khác mặc định', 'Sync {n} changed steps to default'],
+    'tpl.manage': ['Sửa bước mặc định trong Cài đặt', 'Edit default steps in Settings'],
+    't.tplAdded': ['Đã thêm {n} bước', 'Added {n} step(s)'], 't.tplSynced': ['Đã đồng bộ {n} bước theo mặc định', 'Synced {n} step(s) to default'],
+    'set.gen.h': ['Tạo nhanh danh sách chuyền theo số thứ tự', 'Quick-create a list of numbered lines'],
+    'set.gen.from': ['Từ chuyền số', 'From line no.'], 'set.gen.to': ['Đến chuyền số', 'To line no.'],
+    'set.gen.btn': ['Tạo danh sách', 'Create list'], 'set.mach.count': ['{n} chuyền trong danh sách', '{n} lines in the list'],
+    'set.mach.clear': ['Xóa hết', 'Remove all'], 'set.mach.clear2': ['Bấm lần nữa để xóa hết', 'Click again to remove all'],
+    't.gen': ['Đã thêm {n} chuyền', 'Added {n} lines'], 't.genNone': ['Không có chuyền mới để thêm (kiểm tra số từ, số đến, tối đa 100 chuyền)', 'No new lines to add (check the range, up to 100 lines)'],
+    'set.def.h': ['Giá trị mặc định', 'Defaults'],
+    'set.def.target': ['Mục tiêu dừng chuyền cho kế hoạch mới (phút)', 'Downtime target for new plans (min)'],
+    'set.def.lead': ['Người phụ trách ca mặc định', 'Default shift lead'],
+    'set.rsn.h': ['Lý do chậm', 'Delay reasons'],
+    'set.rsn.d': ['Lý do có sẵn không xóa được. Bạn có thể thêm lý do riêng.', 'Built-in reasons cannot be removed. You can add your own.'],
+    'set.rsn.add': ['Thêm lý do', 'Add reason'], 'ph.rsn': ['Lý do mới', 'New reason'],
+    'set.data.h': ['Dữ liệu', 'Data'],
+    'set.data.d': ['Sao chép đoạn mã bên dưới để lưu bản sao lưu. Dán lại rồi bấm Khôi phục để nạp dữ liệu vào trình duyệt khác.', 'Copy the text below as a backup. Paste it back and click Restore to load the data in another browser.'],
+    'set.copy': ['Sao chép', 'Copy'], 'set.restore': ['Khôi phục', 'Restore'], 'set.restoreErr': ['Dữ liệu không hợp lệ', 'Invalid data'],
+    'set.clearHist': ['Xóa toàn bộ lịch sử', 'Delete all history'], 'set.clearHist2': ['Bấm lần nữa để xóa lịch sử', 'Click again to delete history'],
+    'set.reset': ['Đặt lại ứng dụng', 'Reset app'], 'set.reset2': ['Bấm lần nữa để đặt lại', 'Click again to reset'],
+    'set.reset.d': ['Đặt lại sẽ xóa mọi kế hoạch, lịch sử và cài đặt rồi nạp lại dữ liệu ví dụ.', 'Reset deletes all plans, history and settings, then reloads the example data.'],
+    't.copied': ['Đã sao chép', 'Copied'], 't.copyFail': ['Không sao chép được, hãy chọn và sao chép thủ công', 'Could not copy; select the text and copy it manually'],
+    't.restored': ['Đã khôi phục dữ liệu', 'Data restored'], 't.reset': ['Đã đặt lại ứng dụng', 'App reset'], 't.histCleared': ['Đã xóa lịch sử', 'History cleared'],
+    't.dup': ['Đã nhân bản kế hoạch', 'Plan duplicated'], 't.del': ['Đã xóa kế hoạch', 'Plan deleted'],
+    't.cancel': ['Đã hủy lần đổi mã', 'Changeover cancelled'], 't.saved': ['Đã lưu vào lịch sử', 'Saved to history'],
+    't.cleared': ['Đã xóa dữ liệu ví dụ', 'Example data cleared']
+  };
+  var REASONS = ['wait_fabric', 'wait_tool', 'cut_file', 'machine', 'people', 'approval', 'other'];
+
+  var lang = 'both';
+  function fill(s, v) { return v ? s.replace(/\{(\w+)\}/g, function (m, k) { return v[k] != null ? v[k] : m; }) : s; }
+  function bi(vi, en, inl) {
+    if (lang === 'vi') return esc(vi);
+    if (lang === 'en') return esc(en);
+    return '<span class="bi' + (inl ? ' inl' : '') + '"><span class="vi">' + esc(vi) + '</span><span class="en">' + esc(en) + '</span></span>';
+  }
+  function L(k, v) { var d = D[k]; return bi(fill(d[0], v), fill(d[1], v), false); }
+  function Li(k, v) { var d = D[k]; return bi(fill(d[0], v), fill(d[1], v), true); }
+  function T(k, v) {
+    var d = D[k]; if (!d) return k;
+    var a = fill(d[0], v), b = fill(d[1], v);
+    return lang === 'vi' ? a : lang === 'en' ? b : (a === b ? a : a + ' / ' + b);
+  }
+  /* văn bản người dùng hoặc dữ liệu mẫu có thể là chuỗi hoặc {vi, en} */
+  function nm(x) {
+    if (x && typeof x === 'object') { return lang === 'vi' ? x.vi : lang === 'en' ? x.en : (x.vi === x.en ? x.vi : x.vi + ' / ' + x.en); }
+    return x == null ? '' : String(x);
+  }
+  function nmP(x) { return (x && typeof x === 'object') ? (lang === 'en' ? x.en : x.vi) : (x == null ? '' : String(x)); }
+  function nmh(x) { return (x && typeof x === 'object') ? bi(x.vi, x.en, false) : esc(x); }
+  function nmhi(x) { return (x && typeof x === 'object') ? bi(x.vi, x.en, true) : esc(x); }
+  function loc() { return lang === 'en' ? 'en-GB' : 'vi-VN'; }
+  function n1(v) { return Number(v).toLocaleString(lang === 'en' ? 'en-US' : 'vi-VN', { maximumFractionDigits: 1 }); }
+
+  function pad(x) { return x < 10 ? '0' + x : '' + x; }
+  function fmt(ms) {
+    var neg = ms < 0; var s = Math.floor(Math.abs(ms) / 1000);
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), r = s % 60;
+    return (neg ? '-' : '') + (h ? h + ':' + pad(m) : pad(m)) + ':' + pad(r);
+  }
+  function fmtVar(ms) { return (ms > 0 ? '+' : ms < 0 ? '−' : '±') + fmt(Math.abs(ms)); }
+  function fmtDate(ts) { try { return new Date(ts).toLocaleString(loc(), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function fmtDay(ts) { try { return new Date(ts).toLocaleDateString(loc(), { day: '2-digit', month: '2-digit' }); } catch (e) { return ''; } }
+
+  /* ---------- dữ liệu ---------- */
+  var MACHINES = [{ vi: 'Chuyền 3', en: 'Line 3' }, { vi: 'Chuyền 4', en: 'Line 4' }];
+  function mkStep(name, type, min, owner, ref) { return { id: uid(), name: name, type: type, min: min, owner: owner || '', ref: ref || null }; }
+  function o(vi, en) { return { vi: vi, en: en }; }
+  function seed() {
+    var pname = o('Đổi mã 880V15 sang 880V16', 'Changeover 880V15 to 880V16');
+    var plan = {
+      id: uid(), example: true, name: pname, machine: MACHINES[0], from: '880V15', to: '880V16', kind: 'planned', target: 20,
+      steps: defaultSteps().map(fromTpl)
+    };
+    var days = ['2026-10-03T08:10:00+07:00', '2026-10-05T07:40:00+07:00', '2026-10-06T08:05:00+07:00', '2026-10-07T07:50:00+07:00', '2026-10-08T08:00:00+07:00'];
+    var acts = [38, 34, 31, 29, 27];
+    var runs = days.map(function (d, i) {
+      return { id: uid(), example: true, ts: Date.parse(d), machine: MACHINES[0], from: '880V15', to: '880V16', kind: i === 2 ? 'unplanned' : 'planned', checks: null, operator: '', planName: pname, planDown: 25, target: 20, actualDown: acts[i] * 60, totalSec: (acts[i] + 22) * 60, steps: null };
+    }).reverse();
+    return { plans: [plan], runs: runs, active: null, tab: 'plan', selPlan: plan.id, execPlan: plan.id, operator: '', lang: 'both' };
+  }
+  function migrate(s) {
+    var had = s.plans.some(function (p) { return p.example; }) || s.runs.some(function (r) { return r.example; });
+    if (had) {
+      var sd = seed();
+      s.plans = sd.plans.concat(s.plans.filter(function (p) { return !p.example; }));
+      s.runs = s.runs.filter(function (r) { return !r.example; }).concat(sd.runs).sort(function (a, b) { return b.ts - a.ts; });
+      s.selPlan = s.plans[0].id; s.execPlan = s.plans[0].id;
+    }
+    s.lang = 'both';
+    return s;
+  }
+  var state;
+  function load() {
+    try { var raw = localStorage.getItem(KEY); if (raw) { var s = JSON.parse(raw); if (s && s.plans && s.runs) return s; } } catch (e) {}
+    try { var old = localStorage.getItem(OLD_KEY); if (old) { var s1 = JSON.parse(old); if (s1 && s1.plans && s1.runs) return migrate(s1); } } catch (e) {}
+    return seed();
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  state = load();
+  lang = state.lang === 'vi' || state.lang === 'en' ? state.lang : 'both';
+  var confirmDel = false, confirmCancel = false, confirmSet = '', openRun = null, hold;
+  var hostTheme = document.documentElement.getAttribute('data-theme');
+  function ensureSettings() {
+    var s = state.settings;
+    if (!s || typeof s !== 'object') s = state.settings = {};
+    if (!Array.isArray(s.machines)) s.machines = MACHINES.slice();
+    if (typeof s.target !== 'number') s.target = 20;
+    if (s.theme !== 'light' && s.theme !== 'dark') s.theme = 'auto';
+    if (!Array.isArray(s.reasons)) s.reasons = [];
+    if (s.lead == null || (typeof s.lead !== 'string' && typeof s.lead !== 'object')) s.lead = '';
+    if (!Array.isArray(s.models)) s.models = [{ from: '880V15', to: '880V16' }, { from: '880V16', to: '880V15' }];
+    if (!Array.isArray(s.people)) s.people = [o('Kỹ thuật', 'Engineering'), o('Tổ trải vải', 'Spreading team'), o('Thợ bảo trì', 'Maintenance tech'), o('Tổ trưởng', 'Team leader'), o('Vận hành máy', 'Machine operator')];
+    if (!Array.isArray(s.checklist)) s.checklist = [
+      { id: 'c1', text: o('Marker file đúng phiên bản và khổ vải', 'Marker file is the correct version and fabric width'), req: true },
+      { id: 'c2', text: o('Vải đúng lô, màu, khổ thực đo', 'Fabric lot, colour and measured width are correct'), req: true },
+      { id: 'c3', text: o('Bàn kế tiếp đã trải sẵn', 'The next lay is pre-spread'), req: true },
+      { id: 'c4', text: o('Dao, giấy phủ và dụng cụ sẵn sàng', 'Blades, cover paper and tools are ready'), req: true },
+      { id: 'c5', text: o('Đủ nhân sự cho lần đổi mã', 'Enough people for the changeover'), req: false }
+    ];
+    if (s.kind !== 'unplanned') s.kind = 'planned';
+    if (!Array.isArray(s.steps)) s.steps = defaultSteps();
+    /* liên kết bước trong kế hoạch với bước mặc định: kế hoạch ví dụ chưa chỉnh được nạp lại theo bộ mặc định, bước cũ khác thì ghép theo tên */
+    var byName = {};
+    s.steps.forEach(function (t) { var k = mKey(t.name); if (k) byName[k] = t.id; });
+    (state.plans || []).forEach(function (p) {
+      if (!Array.isArray(p.steps)) return;
+      if (p.example && p.steps.length && p.steps.every(function (st) { return st.ref === undefined; })) { p.steps = s.steps.map(fromTpl); return; }
+      p.steps.forEach(function (st) { if (st.ref === undefined) { var k = mKey(st.name); st.ref = (k && byName[k]) || null; } });
+    });
+    if (!state.execChecks || typeof state.execChecks !== 'object') state.execChecks = {};
+    if (!state.operator && s.lead) state.operator = s.lead;
+    /* đổi tên cũ "Máy 3 / Máy 4" của bản trước sang "Chuyền" */
+    var fixM = function (m) {
+      if (m && typeof m === 'object') { if (m.vi === 'Máy 3') return MACHINES[0]; if (m.vi === 'Máy 4') return MACHINES[1]; }
+      return m;
+    };
+    s.machines = s.machines.map(fixM);
+    (state.plans || []).forEach(function (p) { p.machine = fixM(p.machine); });
+    (state.runs || []).forEach(function (r) { r.machine = fixM(r.machine); });
+    if (state.active) state.active.machine = fixM(state.active.machine);
+  }
+  function applyTheme() {
+    var th = state.settings.theme, root = document.documentElement;
+    if (th === 'light' || th === 'dark') root.setAttribute('data-theme', th);
+    else if (hostTheme) root.setAttribute('data-theme', hostTheme);
+    else root.removeAttribute('data-theme');
+  }
+  ensureSettings(); applyTheme();
+
+  function curPlan() {
+    var p = state.plans.filter(function (x) { return x.id === state.selPlan; })[0];
+    if (!p && state.plans.length) { p = state.plans[0]; state.selPlan = p.id; }
+    return p;
+  }
+  function sums(p) {
+    var I = p.steps.filter(function (s) { return s.type === 'I'; });
+    var E = p.steps.filter(function (s) { return s.type === 'E'; });
+    var sum = function (a) { return a.reduce(function (t, s) { return t + num(s.min); }, 0); };
+    return { I: I, E: E, i: sum(I), e: sum(E) };
+  }
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.h); toast.h = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+
+  /* ---------- khung chung ---------- */
+  function renderTop() {
+    document.documentElement.lang = lang === 'en' ? 'en' : 'vi';
+    var one = lang === 'both';
+    $('#top').innerHTML = '<div class="brand"><h1>' + (one ? 'SMED Đổi Mã <span class="en">Changeover</span>' : esc(T('app.title'))) + '</h1><p>' + L('app.sub') + '</p></div>' +
+      '<div class="lang" role="group" aria-label="Ngôn ngữ / Language">' +
+      [['vi', 'Tiếng Việt'], ['en', 'English'], ['both', 'Việt · English']].map(function (x) { return '<button data-a="lang" data-l="' + x[0] + '" aria-pressed="' + (lang === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>';
+    $('#foot').innerHTML = L('foot');
+  }
+  function renderNav() {
+    $('#nav').innerHTML = [['plan', 'tab.plan'], ['exec', 'tab.exec'], ['hist', 'tab.hist'], ['set', 'tab.set']].map(function (t) {
+      return '<button class="tab" role="tab" data-a="tab" data-t="' + t[0] + '" aria-selected="' + (state.tab === t[0]) + '">' + L(t[1]) +
+        (t[0] === 'exec' && state.active ? '<span class="dot" title="' + esc(T('tab.live')) + '"></span>' : '') + '</button>';
+    }).join('');
+  }
+  function exBadge() { return '<span class="badge-ex">' + Li('example') + '</span>'; }
+
+  /* ---------- kế hoạch ---------- */
+  function planView() {
+    if (!state.plans.length) {
+      return '<div class="panel empty"><h3>' + L('empty.plan.t') + '</h3><p>' + L('empty.plan.d') + '</p><button class="btn primary big" data-a="plan-new">' + L('btn.createPlan') + '</button></div>';
+    }
+    var p = curPlan();
+    var opts = state.plans.map(function (x) { return '<option value="' + x.id + '"' + (x.id === p.id ? ' selected' : '') + '>' + esc(nm(x.name) || T('unnamed.plan')) + '</option>'; }).join('');
+    var head = '<div class="panel"><div class="row">' +
+      '<label class="field grow"><span>' + Li('plan.select') + '</span><select id="plan-select" data-ch="plan-select">' + opts + '</select></label>' +
+      '<div class="row">' +
+      '<button class="btn" data-a="plan-new">' + L('plan.new') + '</button>' +
+      '<button class="btn" data-a="plan-dup">' + L('plan.dup') + '</button>' +
+      '<button class="btn danger' + (confirmDel ? ' armed' : '') + '" data-a="plan-del">' + L(confirmDel ? 'plan.del2' : 'plan.del') + '</button>' +
+      '</div></div></div>';
+    var meta = '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('meta.h') + '</h2>' + (p.example ? exBadge() : '') + '</div>' +
+      '<div class="meta">' +
+      '<label class="field"><span>' + Li('f.name') + '</span><input type="text" data-pf="name" value="' + esc(nm(p.name)) + '"></label>' +
+      '<label class="field"><span>' + Li('f.machine') + '</span>' + lineSelect(p.machine, 'id="plan-line" data-pf="machine"') + '</label>' +
+      '<label class="field"><span>' + Li('f.model') + '</span>' + modelSelect(p.from, p.to, 'id="plan-model" data-pf="model"') + '</label>' +
+      '<label class="field"><span>' + Li('f.kind') + '</span><select id="plan-kind" data-pf="kind"><option value="planned"' + (p.kind === 'unplanned' ? '' : ' selected') + '>' + esc(T('kind.planned')) + '</option><option value="unplanned"' + (p.kind === 'unplanned' ? ' selected' : '') + '>' + esc(T('kind.unplanned')) + '</option></select></label>' +
+      '<label class="field"><span>' + Li('f.target') + '</span><input type="number" min="0" step="0.5" data-pf="target" value="' + esc(p.target) + '"></label>' +
+      '</div><p style="margin:12px 0 0"><button class="btn sm" data-a="tab" data-t="set">' + Li('line.manage') + '</button></p></div>';
+    var sum = '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('sum.h') + '</h2></div><div id="plan-sum">' + planSumHTML(p) + '</div></div>';
+    var rows = p.steps.map(function (s, i) {
+      return '<div class="srow ' + s.type + '" data-sid="' + s.id + '">' +
+        '<div class="no">' + (i + 1) + '</div>' +
+        '<div class="f-name"><input type="text" aria-label="' + esc(T('aria.step')) + '" placeholder="' + esc(T('ph.step')) + '" data-sf="name" value="' + esc(nmP(s.name)) + '"><div class="lnkwrap">' + linkInner(s) + '</div></div>' +
+        '<label class="f-owner">' + personSelect(s.owner, 'aria-label="' + esc(T('col.owner')) + '" data-sf="owner"') + '</label>' +
+        '<label class="f-min"><input type="number" aria-label="' + esc(T('aria.min')) + '" min="0" step="0.5" data-sf="min" value="' + esc(s.min) + '"></label>' +
+        '<div class="f-type"><button class="chip ' + s.type + '" data-a="step-toggle" data-sid="' + s.id + '" title="' + esc(T('type.toggle')) + '">' + Li('type.' + s.type) + '</button></div>' +
+        '<div class="acts">' +
+        '<button class="ib" data-a="step-up" data-sid="' + s.id + '" aria-label="' + esc(T('aria.up')) + '"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+        '<button class="ib" data-a="step-down" data-sid="' + s.id + '" aria-label="' + esc(T('aria.down')) + '"' + (i === p.steps.length - 1 ? ' disabled' : '') + '>↓</button>' +
+        '<button class="ib" data-a="step-del" data-sid="' + s.id + '" aria-label="' + esc(T('aria.del')) + '">✕</button>' +
+        '</div></div>';
+    }).join('');
+    var steps = '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('steps.h') + '</h2><span class="muted">' + Li('steps.tip') + '</span></div>' +
+      '<div class="srow-head"><span>#</span><span>' + Li('col.step') + '</span><span>' + Li('col.owner') + '</span><span>' + Li('col.min') + '</span><span>' + Li('col.type') + '</span><span></span></div>' +
+      '<div class="steps">' + (rows || '<div class="empty">' + L('steps.empty') + '</div>') + '</div>' +
+      tplBar(p) + '<div class="row" style="margin-top:12px"><button class="btn" data-a="step-add" data-type="E">' + L('add.E') + '</button><button class="btn" data-a="step-add" data-type="I">' + L('add.I') + '</button>' +
+      '<span class="grow"></span><button class="btn primary" data-a="goto-exec">' + L('go.exec') + '</button></div></div>';
+    return '<div class="stack">' + head + meta + sum + steps + '</div>';
+  }
+  function planSumHTML(p) {
+    var m = sums(p), t = num(p.target), diff = m.i - t;
+    var status = t > 0 ? (diff <= 0 ? '<span class="chip good">' + Li('st.ok', { t: n1(t) }) + '</span>' : '<span class="chip bad">' + Li('st.over', { d: n1(diff), t: n1(t) }) + '</span>') : '<span class="muted">' + Li('st.none') + '</span>';
+    var u = L('unit.min');
+    var tiles = '<div class="tiles">' +
+      '<div class="tile I"><div class="lbl">' + L('tile.int') + '</div><div class="val">' + n1(m.i) + '<small>' + Li('unit.min') + '</small></div><div class="sub">' + status + '</div></div>' +
+      '<div class="tile E"><div class="lbl">' + L('tile.ext') + '</div><div class="val">' + n1(m.e) + '<small>' + Li('unit.min') + '</small></div><div class="sub muted">' + Li('sub.ext', { n: m.E.length }) + '</div></div>' +
+      '<div class="tile N"><div class="lbl">' + L('tile.total') + '</div><div class="val">' + n1(m.i + m.e) + '<small>' + Li('unit.min') + '</small></div><div class="sub muted">' + Li('sub.total', { n: p.steps.length, i: m.I.length }) + '</div></div></div>';
+    var hint = '';
+    if (t > 0 && diff > 0 && m.I.length) {
+      var top = m.I.slice().sort(function (a, b) { return num(b.min) - num(a.min); }).slice(0, 2);
+      hint = '<div class="hint"><span>' + L('hint', { d: n1(diff) }) + '</span>' +
+        top.map(function (s) { return '<button class="btn sm" data-a="step-toggle" data-sid="' + s.id + '">' + Li('hint.btn', { name: nmP(s.name) || T('unnamed.step'), m: n1(num(s.min)) }) + '</button>'; }).join('') + '</div>';
+    }
+    return tiles + hint + timelineHTML(p, m);
+  }
+  function timelineHTML(p, m) {
+    var t = num(p.target);
+    var total = Math.max(m.i, t) + m.e;
+    if (total <= 0) return '';
+    var pct = function (v) { return v / total * 100; };
+    var blocks = function (arr, off, cls) {
+      var c = off;
+      return arr.map(function (s) {
+        var w = pct(num(s.min));
+        var h = '<div class="blk ' + cls + '" style="left:' + c + '%;width:' + w + '%" title="' + esc(nm(s.name) + ' · ' + n1(num(s.min)) + ' ' + T('unit.min')) + '"><span>' + esc(nmP(s.name)) + '</span></div>';
+        c += w; return h;
+      }).join('');
+    };
+    var split = pct(m.e);
+    var out = '<div class="tl-scroll"><div class="legend"><span><i class="sw" style="background:var(--ext)"></i>' + Li('lg.ext') + '</span><span><i class="sw" style="background:var(--int)"></i>' + Li('lg.int') + '</span></div><div class="tl">';
+    out += '<div class="lane">' + blocks(m.E, 0, 'E') + '</div>';
+    out += '<div class="lane">' + blocks(m.I, split, 'I') + '</div>';
+    out += '<div class="mark s" style="left:' + split + '%"><b>' + Li('tl.stop') + '</b></div>';
+    if (t > 0) out += '<div class="mark t" style="left:' + pct(m.e + t) + '%"><b>' + Li('tl.target', { t: n1(t) }) + '</b></div>';
+    return out + '</div></div>';
+  }
+  function updatePlanSum() { var p = curPlan(); var el = $('#plan-sum'); if (p && el) el.innerHTML = planSumHTML(p); }
+
+  /* ---------- thực thi ---------- */
+  function stepStatus(s) { return !s.startedAt ? 'pending' : (s.endedAt ? 'done' : 'running'); }
+  function downInfo(r, now) {
+    var ints = r.steps.filter(function (s) { return s.type === 'I'; });
+    var st = ints.filter(function (s) { return s.startedAt; }).map(function (s) { return s.startedAt; });
+    if (!st.length) return { ms: 0, state: 'idle' };
+    var all = ints.every(function (s) { return s.endedAt; });
+    var en = all ? Math.max.apply(null, ints.map(function (s) { return s.endedAt; })) : now;
+    return { ms: en - Math.min.apply(null, st), state: all ? 'done' : 'run' };
+  }
+  function execView() {
+    var r = state.active;
+    if (!r) {
+      if (!state.plans.length) return '<div class="panel empty"><h3>' + L('exec.nopl.t') + '</h3><p>' + L('exec.nopl.d') + '</p><button class="btn primary" data-a="tab" data-t="plan">' + L('btn.openPlan') + '</button></div>';
+      var p = state.plans.filter(function (x) { return x.id === state.execPlan; })[0] || state.plans[0];
+      state.execPlan = p.id;
+      var m = sums(p), tg = num(p.target);
+      var opts = state.plans.map(function (x) { return '<option value="' + x.id + '"' + (x.id === p.id ? ' selected' : '') + '>' + esc(nm(x.name) || T('unnamed.plan')) + '</option>'; }).join('');
+      var list = p.steps.map(function (s, i) {
+        return '<li class="xs ' + s.type + '"><div class="no">' + (i + 1) + '</div><div><div class="xs-name">' + nmh(s.name) + '</div><div class="xs-meta">' + esc(nm(s.owner)) + '</div></div><div class="mono">' + n1(num(s.min)) + ' ' + Li('unit.short') + ' <span class="chip ' + s.type + '">' + Li('type.' + s.type) + '</span></div></li>';
+      }).join('');
+      var lineObj = state.execLine ? lineByKey(state.execLine, p.machine) : p.machine;
+      var pair = state.execModel ? pairByKey(state.execModel, { from: p.from, to: p.to }) : { from: p.from, to: p.to };
+      var kind = state.execKind === 'unplanned' || state.execKind === 'planned' ? state.execKind : (p.kind === 'unplanned' ? 'unplanned' : 'planned');
+      var chk = state.settings.checklist;
+      var reqTotal = chk.filter(function (c) { return c.req; }).length;
+      var reqDone = chk.filter(function (c) { return c.req && state.execChecks[c.id]; }).length;
+      var ready = p.steps.length > 0 && reqDone === reqTotal;
+      var vars = { m: nm(lineObj), f: pair.from, t: pair.to, i: n1(m.i), g: n1(tg) };
+      var chkHTML = '';
+      if (chk.length) {
+        chkHTML = '<div class="chkbox"><div class="sec-head" style="margin-bottom:8px"><h3>' + L('exec.chk.h') + '</h3><span class="muted">' + Li('exec.chk.prog', { d: reqDone, t: reqTotal }) + '</span></div><ul class="chklist">' +
+          chk.map(function (c) {
+            return '<li><label class="chkrow"><input type="checkbox" data-chk="' + esc(c.id) + '"' + (state.execChecks[c.id] ? ' checked' : '') + '><span>' + nmh(c.text) + (c.req ? '' : ' <span class="muted">(' + Li('chk.opt') + ')</span>') + '</span></label></li>';
+          }).join('') + '</ul></div>';
+      }
+      return '<div class="stack"><div class="panel"><div class="sec-head"><h2 class="h2">' + L('exec.start.h') + '</h2></div>' +
+        '<div class="row"><label class="field grow"><span>' + Li('plan.select') + '</span><select id="exec-plan" data-ch="exec-plan">' + opts + '</select></label>' +
+        '<label class="field grow"><span>' + Li('f.machine') + '</span>' + lineSelect(lineObj, 'id="exec-line" data-ch="exec-line"') + '</label></div>' +
+        '<div class="row" style="margin-top:12px"><label class="field grow"><span>' + Li('f.model') + '</span>' + modelSelect(pair.from, pair.to, 'id="exec-model" data-ch="exec-model"') + '</label>' +
+        '<label class="field grow"><span>' + Li('f.operator') + '</span>' + personSelect(state.operator, 'id="operator" data-of="operator"') + '</label></div>' +
+        '<div class="field" style="margin-top:12px;align-items:flex-start"><span>' + Li('f.kind') + '</span>' + kindSeg(kind, 'exec-kind') + '</div>' +
+        '<p class="muted" style="margin:12px 0">' + L(tg ? 'exec.info.t' : 'exec.info', vars) + '</p>' + chkHTML +
+        '<div class="row" style="margin-top:14px"><button class="btn primary big" data-a="run-start"' + (ready ? '' : ' disabled') + '>' + L('btn.startRun') + '</button>' + (!ready && p.steps.length ? '<span class="muted">' + Li('exec.chk.block') + '</span>' : '') + '</div></div>' +
+        '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('exec.steps.h') + '</h2></div><ul class="xlist prev">' + (list || '<li class="muted">' + L('exec.nosteps') + '</li>') + '</ul></div></div>';
+    }
+    var done = r.steps.filter(function (s) { return s.endedAt; }).length;
+    var allDone = done === r.steps.length;
+    var clocks = '<div class="clocks">' +
+      '<div class="clock"><div class="lbl">' + L('clk.total') + '</div><div class="big" id="clk-total">00:00</div><div class="muted">' + Li('clk.started', { t: fmtDate(r.startedAt) }) + '</div></div>' +
+      '<div class="clock down" id="clk-down-box"><div class="lbl">' + L('clk.down') + '</div><div class="big" id="clk-down">00:00</div><div class="bar"><i id="bar-down"></i></div><div class="muted" style="margin-top:4px">' + (num(r.target) ? Li('clk.target', { t: fmt(num(r.target) * 60000) }) : Li('clk.noTarget')) + '</div></div>' +
+      '<div class="clock"><div class="lbl">' + L('clk.prog') + '</div><div class="big">' + done + '/' + r.steps.length + '</div><div class="muted">' + Li('clk.progSub') + '</div></div></div>';
+    var group = function (type) {
+      var items = r.steps.map(function (s, i) { return { s: s, i: i }; }).filter(function (x) { return x.s.type === type; });
+      if (!items.length) return '';
+      return '<div class="xgroup"><h3><span class="chip ' + type + '">' + Li('type.' + type) + '</span><span class="note">' + Li('grp.' + type) + '</span></h3><ol class="xlist">' + items.map(function (x) { return stepRow(x.s, x.i); }).join('') + '</ol></div>';
+    };
+    var finish = '<div class="panel finish"><div>' + (allDone ? '<strong>' + L('fin.all') + '</strong>' : L('fin.left', { n: r.steps.length - done })) + '</div><div class="row">' +
+      '<button class="btn danger' + (confirmCancel ? ' armed' : '') + '" data-a="run-cancel">' + L(confirmCancel ? 'run.cancel2' : 'run.cancel') + '</button>' +
+      '<button class="btn primary big" data-a="run-finish"' + (allDone ? '' : ' disabled') + '>' + L('run.finish') + '</button></div></div>';
+    return '<div class="stack"><div class="panel"><div class="sec-head"><h2 class="h2">' + esc(nm(r.machine)) + ' · ' + esc(r.from) + ' ' + Li('to') + ' ' + esc(r.to) + ' ' + kindChip(r.kind) + '</h2><span class="muted">' + (r.operator ? leadHTML(r.operator) : '') + '</span></div>' + clocks + '</div>' +
+      group('E') + group('I') + finish + '</div>';
+  }
+  function stepRow(s, i) {
+    var st = stepStatus(s);
+    var btn = st === 'pending' ? '<button class="btn primary" data-a="step-start" data-sid="' + s.id + '">' + L('step.start') + '</button>' :
+      st === 'running' ? '<button class="btn primary" data-a="step-done" data-sid="' + s.id + '">' + L('step.done') + '</button>' :
+      '<button class="btn sm" data-a="step-reset" data-sid="' + s.id + '">' + Li('step.reopen') + '</button>';
+    var actual = st === 'done' ? s.endedAt - s.startedAt : 0;
+    var isLate = st === 'done' && actual > num(s.plan) * 60000;
+    var why = '';
+    if (isLate) {
+      why = '<div class="why"><span class="muted">' + Li('late.by', { t: fmt(actual - num(s.plan) * 60000) }) + '</span><select data-ch="reason" data-sid="' + s.id + '"><option value="">' + esc(T('reason.none')) + '</option>' +
+        REASONS.concat(state.settings.reasons).map(function (x) { return '<option value="' + esc(x) + '"' + (s.reason === x ? ' selected' : '') + '>' + esc(reasonText(x)) + '</option>'; }).join('') + '</select></div>';
+    }
+    return '<li class="xs ' + s.type + ' ' + st + '" data-sid="' + s.id + '"><div class="no">' + (i + 1) + '</div>' +
+      '<div><div class="xs-name">' + nmh(s.name) + '</div><div class="xs-meta">' + (s.owner ? '<span>' + nmhi(s.owner) + '</span>' : '') + '<span>' + Li('plan.t', { t: fmt(num(s.plan) * 60000) }) + '</span></div></div>' +
+      '<div class="xs-time"><span class="t" data-timer="' + s.id + '">' + (st === 'done' ? fmt(actual) : '00:00') + '</span><span class="v" data-var="' + s.id + '"></span></div>' +
+      '<div class="xs-act">' + btn + '</div>' + why + '</li>';
+  }
+  function tick() {
+    var r = state.active; if (!r || state.tab !== 'exec') return;
+    var now = Date.now();
+    var el = $('#clk-total'); if (el) el.textContent = fmt(now - r.startedAt);
+    var d = downInfo(r, now);
+    el = $('#clk-down'); if (el) el.textContent = fmt(d.ms);
+    var tg = num(r.target) * 60000;
+    var box = $('#clk-down-box'), bar = $('#bar-down');
+    if (box && bar) { box.classList.toggle('over', tg > 0 && d.ms > tg); bar.style.width = (tg > 0 ? Math.min(100, d.ms / tg * 100) : (d.ms ? 100 : 0)) + '%'; }
+    r.steps.forEach(function (s) {
+      var t = $('[data-timer="' + s.id + '"]'), v = $('[data-var="' + s.id + '"]'); if (!t || !v) return;
+      var st = stepStatus(s); if (st === 'pending') { v.textContent = ''; return; }
+      var a = (s.endedAt || now) - s.startedAt, diff = a - num(s.plan) * 60000;
+      t.textContent = fmt(a); t.classList.toggle('late', diff > 0);
+      v.textContent = fmtVar(diff); v.className = 'v ' + (diff > 0 ? 'late' : 'ok');
+    });
+  }
+
+  /* ---------- lịch sử ---------- */
+  function reasonText(v) { return D['reason.' + v] ? T('reason.' + v) : v; }
+  function mKey(m) { return String(m && typeof m === 'object' ? m.vi : (m == null ? '' : m)).trim().toLowerCase(); }
+  function mSplit(m) { var k = mKey(m), x = /^(.*?)(\d+)\s*$/.exec(k); return x ? { p: x[1], n: parseInt(x[2], 10) } : { p: k, n: 0 }; }
+  function mCmp(a, b) { var A = mSplit(a), B = mSplit(b); return A.p === B.p ? A.n - B.n : (A.p < B.p ? -1 : 1); }
+  /* chọn chuyền: lấy từ danh sách trong Cài đặt; chuyền cũ không còn trong danh sách vẫn được giữ lại để không mất dữ liệu */
+  function lineByKey(key, cur) {
+    if (!key) return '';
+    var f = state.settings.machines.filter(function (m) { return mKey(m) === key; })[0];
+    return f !== undefined ? f : (mKey(cur) === key ? cur : key);
+  }
+  function lineSelect(cur, attrs) {
+    var list = state.settings.machines, ck = mKey(cur);
+    var has = list.some(function (m) { return mKey(m) === ck; });
+    var opts = '';
+    if (!ck) opts += '<option value="" selected>' + esc(T(list.length ? 'line.choose' : 'line.none')) + '</option>';
+    else if (!has) opts += '<option value="' + esc(ck) + '" selected>' + esc(nm(cur)) + '</option>';
+    opts += list.map(function (m) { return '<option value="' + esc(mKey(m)) + '"' + (mKey(m) === ck ? ' selected' : '') + '>' + esc(nm(m)) + '</option>'; }).join('');
+    return '<select ' + attrs + '>' + opts + '</select>';
+  }
+  function kindChip(k) { var u = k === 'unplanned'; return '<span class="chip ' + (u ? 'un' : 'pl') + '">' + Li(u ? 'kind.unplanned' : 'kind.planned') + '</span>'; }
+  function kindSeg(cur, act) {
+    return '<div class="lang" role="group">' + ['planned', 'unplanned'].map(function (k) {
+      return '<button data-a="' + act + '" data-v="' + k + '" aria-pressed="' + (cur === k) + '">' + esc(T('kind.' + k)) + '</button>';
+    }).join('') + '</div>';
+  }
+  /* cặp Model A ➔ Model B: khóa so sánh không phân biệt hoa thường; cặp cũ không còn trong danh mục vẫn được giữ lại */
+  function pk(f, t) { return String(f == null ? '' : f).trim().toLowerCase() + '>' + String(t == null ? '' : t).trim().toLowerCase(); }
+  function pairByKey(key, fallback) {
+    var f = state.settings.models.filter(function (m) { return pk(m.from, m.to) === key; })[0];
+    return f ? { from: f.from, to: f.to } : (fallback || { from: '', to: '' });
+  }
+  function modelSelect(from, to, attrs) {
+    var list = state.settings.models, ck = (from || to) ? pk(from, to) : '';
+    var has = list.some(function (m) { return pk(m.from, m.to) === ck; });
+    var opts = '';
+    if (!ck) opts += '<option value="" selected>' + esc(T(list.length ? 'model.choose' : 'model.none')) + '</option>';
+    else if (!has) opts += '<option value="' + esc(ck) + '" selected>' + esc(from + ' ➔ ' + to) + '</option>';
+    opts += list.map(function (m) { var k = pk(m.from, m.to); return '<option value="' + esc(k) + '"' + (k === ck ? ' selected' : '') + '>' + esc(m.from + ' ➔ ' + m.to) + '</option>'; }).join('');
+    return '<select ' + attrs + '>' + opts + '</select>';
+  }
+  /* danh mục người phụ trách */
+  function personByKey(key, cur) {
+    if (!key) return '';
+    var f = state.settings.people.filter(function (m) { return mKey(m) === key; })[0];
+    return f !== undefined ? f : (mKey(cur) === key ? cur : key);
+  }
+  function personSelect(cur, attrs) {
+    var list = state.settings.people, ck = mKey(cur);
+    var has = list.some(function (m) { return mKey(m) === ck; });
+    var opts = '<option value=""' + (ck ? '' : ' selected') + '>' + esc(T('person.none')) + '</option>';
+    if (ck && !has) opts += '<option value="' + esc(ck) + '" selected>' + esc(nm(cur)) + '</option>';
+    opts += list.map(function (m) { return '<option value="' + esc(mKey(m)) + '"' + (mKey(m) === ck ? ' selected' : '') + '>' + esc(nm(m)) + '</option>'; }).join('');
+    return '<select ' + attrs + '>' + opts + '</select>';
+  }
+  function leadHTML(op) {
+    var obj = op && typeof op === 'object', d = D['lead'];
+    return bi(fill(d[0], { n: obj ? op.vi : op }), fill(d[1], { n: obj ? op.en : op }), true);
+  }
+  /* ---------- bước đổi mã mặc định (Cài đặt) liên kết với bước trong kế hoạch ---------- */
+  function cl(x) { return x && typeof x === 'object' ? { vi: x.vi, en: x.en } : x; }
+  function defaultSteps() {
+    return [
+      { id: 's1', name: o('Kiểm tra file marker mã mới: đúng phiên bản và khổ vải', 'Check the new style marker file: correct version and fabric width'), type: 'E', min: 5, owner: o('Kỹ thuật', 'Engineering') },
+      { id: 's2', name: o('Trải sẵn bàn mã mới cạnh máy', 'Pre-spread the new style lay beside the machine'), type: 'E', min: 12, owner: o('Tổ trải vải', 'Spreading team') },
+      { id: 's3', name: o('Chuẩn bị sẵn dao, kiểm tra tồn kho dao', 'Prepare blades and check blade stock'), type: 'E', min: 5, owner: o('Thợ bảo trì', 'Maintenance tech') },
+      { id: 's4', name: o('Hoàn thành checklist đầu vào bàn mã mới', 'Complete the input checklist for the new style lay'), type: 'E', min: 3, owner: o('Tổ trưởng', 'Team leader') },
+      { id: 's5', name: o('Cắt xong bàn cuối mã cũ, bóc tách và dọn chi tiết', 'Finish the last old style lay, unload and clear the parts'), type: 'I', min: 6, owner: o('Vận hành máy', 'Machine operator') },
+      { id: 's6', name: o('Thoát file mã cũ, nạp file mã mới và xác nhận chương trình', 'Exit the old style file, load the new style file and confirm the program'), type: 'I', min: 2, owner: o('Vận hành máy', 'Machine operator') },
+      { id: 's7', name: o('Thay dao, kiểm tra thông số cắt theo loại vải', 'Change the blade, check cutting parameters for the fabric'), type: 'I', min: 5, owner: o('Thợ bảo trì', 'Maintenance tech') },
+      { id: 's8', name: o('Vệ sinh lưới bàn và băng tải', 'Clean the cutting grid and conveyor'), type: 'I', min: 4, owner: o('Vận hành máy', 'Machine operator') },
+      { id: 's9', name: o('Đưa bàn mã mới lên máy, trải giấy phủ, bật hút chân không', 'Move the new style lay onto the machine, cover with paper, start vacuum'), type: 'I', min: 3, owner: o('Tổ trải vải', 'Spreading team') },
+      { id: 's10', name: o('Cắt thử và duyệt chi tiết đầu tiên', 'Test cut and approve the first part'), type: 'I', min: 5, owner: o('Tổ trưởng', 'Team leader') }
+    ];
+  }
+  function tplById(id) { return state.settings.steps.filter(function (t) { return t.id === id; })[0]; }
+  function fromTpl(t) { return mkStep(cl(t.name), t.type, t.min, cl(t.owner), t.id); }
+  function tplDiff(s, t) { return mKey(s.name) !== mKey(t.name) || s.type !== t.type || num(s.min) !== num(t.min) || mKey(s.owner) !== mKey(t.owner); }
+  function applyTpl(s, t) { s.name = cl(t.name); s.type = t.type; s.min = t.min; s.owner = cl(t.owner); }
+  function modCount(p) { return p.steps.filter(function (s) { var t = s.ref && tplById(s.ref); return t && tplDiff(s, t); }).length; }
+  function linkInner(s) {
+    var t = s.ref ? tplById(s.ref) : null;
+    if (!t) return '';
+    if (!tplDiff(s, t)) return '<span class="lnk ok">' + Li('lnk.ok') + '</span>';
+    return '<span class="lnk mod">' + Li('lnk.mod') + ' <button class="lnk-btn" data-a="step-reset-tpl" data-sid="' + s.id + '">' + Li('lnk.reset') + '</button></span>';
+  }
+  function refreshLinks() {
+    var p = curPlan(); if (!p) return;
+    $$('.srow[data-sid]').forEach(function (row) { var s = stepById(p, row.dataset.sid), w = row.querySelector('.lnkwrap'); if (s && w) { var h = linkInner(s); if (w.innerHTML !== h) w.innerHTML = h; } });
+    var n = modCount(p), b = $('#tpl-sync-btn');
+    if (b) { var bh = L('tpl.sync', { n: n }); b.disabled = !n; if (b.innerHTML !== bh) b.innerHTML = bh; }
+  }
+  function tplBar(p) {
+    var lib = state.settings.steps, used = {};
+    p.steps.forEach(function (s) { if (s.ref) used[s.ref] = 1; });
+    var missing = lib.filter(function (t) { return !used[t.id]; }), n = modCount(p);
+    var opts = missing.length ? missing.map(function (t) {
+      return '<option value="' + esc(t.id) + '">' + esc((nm(t.name) || T('unnamed.step')) + ' · ' + n1(num(t.min)) + ' ' + T('unit.short') + ' · ' + T('type.' + t.type)) + '</option>';
+    }).join('') : '<option value="">' + esc(T(lib.length ? 'tpl.none' : 'tpl.nolib')) + '</option>';
+    return '<div class="tplbar"><div class="row">' +
+      '<select id="tpl-pick" aria-label="' + esc(T('tpl.pick')) + '"' + (missing.length ? '' : ' disabled') + '>' + opts + '</select>' +
+      '<button class="btn" data-a="tpl-pick-add"' + (missing.length ? '' : ' disabled') + '>' + L('tpl.add') + '</button>' +
+      '<button class="btn" data-a="tpl-add-missing"' + (missing.length ? '' : ' disabled') + '>' + L('tpl.addAll', { n: missing.length }) + '</button>' +
+      '<button class="btn" id="tpl-sync-btn" data-a="plan-sync"' + (n ? '' : ' disabled') + '>' + L('tpl.sync', { n: n }) + '</button>' +
+      '<button class="btn sm" data-a="tab" data-t="set">' + Li('tpl.manage') + '</button></div></div>';
+  }
+  function tplSumHTML() {
+    var i = 0, e = 0, st = state.settings.steps;
+    st.forEach(function (t) { if (t.type === 'I') i += num(t.min); else e += num(t.min); });
+    return Li('tpl.sum', { n: st.length, i: n1(i), e: n1(e) });
+  }
+  function tplRow(t, i, n) {
+    var id = esc(t.id);
+    return '<div class="srow ' + t.type + '" data-tid="' + id + '">' +
+      '<div class="no">' + (i + 1) + '</div>' +
+      '<label class="f-name"><input type="text" aria-label="' + esc(T('aria.step')) + '" placeholder="' + esc(T('ph.step')) + '" data-tf="name" value="' + esc(nmP(t.name)) + '"></label>' +
+      '<label class="f-owner">' + personSelect(t.owner, 'aria-label="' + esc(T('col.owner')) + '" data-tf="owner"') + '</label>' +
+      '<label class="f-min"><input type="number" aria-label="' + esc(T('aria.min')) + '" min="0" step="0.5" data-tf="min" value="' + esc(t.min) + '"></label>' +
+      '<div class="f-type"><button class="chip ' + t.type + '" data-a="tpl-toggle" data-tid="' + id + '" title="' + esc(T('type.toggle')) + '">' + Li('type.' + t.type) + '</button></div>' +
+      '<div class="acts">' +
+      '<button class="ib" data-a="tpl-up" data-tid="' + id + '" aria-label="' + esc(T('aria.up')) + '"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+      '<button class="ib" data-a="tpl-down" data-tid="' + id + '" aria-label="' + esc(T('aria.down')) + '"' + (i === n - 1 ? ' disabled' : '') + '>↓</button>' +
+      '<button class="ib" data-a="tpl-del" data-tid="' + id + '" aria-label="' + esc(T('aria.del')) + '">✕</button></div></div>';
+  }
+  function tplPanelHTML() {
+    var st = state.settings.steps;
+    return '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.tpl.h') + '</h2><span class="muted" id="tpl-sum">' + tplSumHTML() + '</span></div>' +
+      '<p class="muted" style="margin:0 0 12px">' + L('set.tpl.d') + '</p>' +
+      '<div class="srow-head"><span>#</span><span>' + Li('col.step') + '</span><span>' + Li('col.owner') + '</span><span>' + Li('col.min') + '</span><span>' + Li('col.type') + '</span><span></span></div>' +
+      '<div class="steps">' + (st.length ? st.map(function (t, i) { return tplRow(t, i, st.length); }).join('') : '<div class="empty">' + L('tpl.empty') + '</div>') + '</div>' +
+      '<div class="row" style="margin-top:12px"><button class="btn" data-a="tpl-add" data-type="E">' + L('add.E') + '</button><button class="btn" data-a="tpl-add" data-type="I">' + L('add.I') + '</button></div></div>';
+  }
+  function reasonHTML(v) { return D['reason.' + v] ? Li('reason.' + v) : esc(v); }
+  function histView() {
+    var all = state.runs;
+    if (!all.length) return '<div class="panel empty"><h3>' + L('hist.empty.t') + '</h3><p>' + L('hist.empty.d') + '</p></div>';
+    var kindOf = function (r) { return r.kind === 'unplanned' ? 'unplanned' : 'planned'; };
+    var fk = state.histKind === 'planned' || state.histKind === 'unplanned' ? state.histKind : 'all';
+    var runs = fk === 'all' ? all : all.filter(function (r) { return kindOf(r) === fk; });
+    var cntP = all.filter(function (r) { return kindOf(r) === 'planned'; }).length, cntU = all.length - cntP;
+    var fbar = '<div class="panel"><div class="row"><strong>' + Li('hist.filter') + '</strong><div class="lang" role="group">' +
+      [['all', T('filter.all')], ['planned', T('kind.planned')], ['unplanned', T('kind.unplanned')]].map(function (x) {
+        return '<button data-a="hist-kind" data-v="' + x[0] + '" aria-pressed="' + (fk === x[0]) + '">' + esc(x[1]) + '</button>';
+      }).join('') + '</div><span class="grow"></span><span class="muted">' + Li('sub.kinds', { p: cntP, u: cntU }) + '</span></div></div>';
+    if (!runs.length) return '<div class="stack">' + fbar + '<div class="panel empty"><h3>' + L('hist.none.t') + '</h3></div></div>';
+    var avg = runs.reduce(function (t, r) { return t + r.actualDown; }, 0) / runs.length;
+    var best = Math.min.apply(null, runs.map(function (r) { return r.actualDown; }));
+    var last = runs[0];
+    var hit = runs.filter(function (r) { return r.target > 0 && r.actualDown <= r.target * 60; }).length;
+    var tiles = '<div class="tiles">' +
+      '<div class="tile N"><div class="lbl">' + L('tile.count') + '</div><div class="val">' + runs.length + '</div><div class="sub muted">' + Li('sub.hit', { n: hit }) + '</div></div>' +
+      '<div class="tile I"><div class="lbl">' + L('tile.avg') + '</div><div class="val">' + n1(avg / 60) + '<small>' + Li('unit.min') + '</small></div><div class="sub muted">' + Li('sub.best', { m: n1(best / 60) }) + '</div></div>' +
+      '<div class="tile N"><div class="lbl">' + L('tile.last') + '</div><div class="val">' + n1(last.actualDown / 60) + '<small>' + Li('unit.min') + '</small></div><div class="sub">' + (last.target > 0 ? (last.actualDown <= last.target * 60 ? '<span class="chip good">' + Li('chip.ok') + '</span>' : '<span class="chip bad">' + Li('chip.over', { d: n1(last.actualDown / 60 - last.target) }) + '</span>') : '') + '</div></div></div>';
+    var hasEx = all.some(function (r) { return r.example; }) || state.plans.some(function (p) { return p.example; });
+    var rows = runs.map(function (r) {
+      var diff = r.target > 0 ? r.actualDown / 60 - r.target : null;
+      var line = '<tr class="run" data-a="run-open" data-rid="' + r.id + '"><td>' + fmtDate(r.ts) + (r.example ? ' ' + exBadge() : '') + '</td><td>' + esc(nm(r.machine)) + '</td><td>' + esc(r.from) + ' ' + Li('to') + ' ' + esc(r.to) + '</td><td>' + kindChip(kindOf(r)) + '</td>' +
+        '<td class="num">' + n1(r.planDown) + '</td><td class="num">' + fmt(r.actualDown * 1000) + '</td><td class="num">' + (r.target > 0 ? n1(r.target) : '') + '</td>' +
+        '<td>' + (diff === null ? '' : (diff <= 0 ? '<span class="chip good">' + Li('chip.pass') + '</span>' : '<span class="chip bad">' + Li('chip.overS', { d: n1(diff) }) + '</span>')) + '</td></tr>';
+      if (openRun === r.id) {
+        var d = r.steps ? '<div class="dtl"><div class="muted"><span>' + Li('dtl.step') + '</span><span class="r">' + Li('dtl.plan') + '</span><span class="r">' + Li('dtl.actual') + '</span><span class="r">' + Li('dtl.diff') + '</span></div>' +
+          r.steps.map(function (s) {
+            var df = s.actual == null ? null : s.actual - s.plan * 60;
+            return '<div><span><span class="chip ' + s.type + '">' + Li('type.' + s.type + 's') + '</span> ' + nmhi(s.name) + (s.reason ? ' <span class="muted">(' + reasonHTML(s.reason) + ')</span>' : '') + '</span><span class="mono r">' + fmt(s.plan * 60000) + '</span><span class="mono r">' + (s.actual == null ? '' : fmt(s.actual * 1000)) + '</span><span class="mono r ' + (df > 0 ? 'late' : 'ok') + '">' + (df == null ? '' : fmtVar(df * 1000)) + '</span></div>';
+          }).join('') + '</div>' : '<span class="muted">' + Li('dtl.noex') + '</span>';
+        var cks = '';
+        if (r.checks && r.checks.length) {
+          var dn = r.checks.filter(function (c) { return c.done; }).length;
+          cks = '<div class="chkres"><span class="muted">' + Li('chk.res', { d: dn, t: r.checks.length }) + '</span>' +
+            r.checks.map(function (c) { return '<span class="chip ' + (c.done ? 'good' : 'bad') + '">' + (c.done ? '✓ ' : '✗ ') + esc(nmP(c.text)) + '</span>'; }).join('') + '</div>';
+        }
+        line += '<tr class="detail"><td colspan="8">' + (r.operator ? '<div class="muted" style="margin-bottom:6px">' + leadHTML(r.operator) + '</div>' : '') + cks + d + '</td></tr>';
+      }
+      return line;
+    }).join('');
+    return '<div class="stack">' + fbar + tiles +
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('chart.h') + '</h2><span class="legend"><span><i class="sw" style="background:var(--good)"></i>' + Li('lg.ok') + '</span><span><i class="sw" style="background:var(--int)"></i>' + Li('lg.bad') + '</span><span><i class="sw" style="background:var(--bad)"></i>' + Li('lg.tgt') + '</span><span><i class="sw" style="background:none;border:1.5px dashed var(--ink)"></i>' + Li('lg.un') + '</span></span></div><div class="chart-wrap">' + chartSVG(runs.slice(0, 10).reverse()) + '</div></div>' +
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('runs.h') + '</h2>' + (hasEx ? '<button class="btn sm" data-a="clear-ex">' + Li('clear.ex') + '</button>' : '') + '</div><div class="tbl-scroll"><table><thead><tr><th>' + L('th.when') + '</th><th>' + L('th.machine') + '</th><th>' + L('th.style') + '</th><th>' + L('th.kind') + '</th><th class="num">' + L('th.plan') + '</th><th class="num">' + L('th.actual') + '</th><th class="num">' + L('th.target') + '</th><th>' + L('th.result') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div></div></div>';
+  }
+  function chartSVG(runs) {
+    var W = 640, H = 240, Lm = 40, R = 12, Tm = 22, B = 30;
+    var maxV = Math.max.apply(null, runs.map(function (r) { return Math.max(r.actualDown / 60, r.target || 0); }));
+    var step = maxV > 60 ? 20 : maxV > 30 ? 10 : 5;
+    var top = Math.ceil(maxV * 1.1 / step) * step;
+    var iw = W - Lm - R, ih = H - Tm - B, slot = iw / runs.length, bw = Math.min(46, slot * 0.6);
+    var y = function (v) { return Tm + ih - v / top * ih; };
+    var g = '';
+    for (var v = 0; v <= top; v += step) g += '<line class="grid" x1="' + Lm + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text x="' + (Lm - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + v + '</text>';
+    var bars = runs.map(function (r, i) {
+      var cx = Lm + slot * i + slot / 2, a = r.actualDown / 60, ok = !(r.target > 0) || a <= r.target;
+      var s = '<rect class="' + (ok ? 'bar-ok' : 'bar-bad') + (r.kind === 'unplanned' ? ' bar-un' : '') + '" x="' + (cx - bw / 2) + '" y="' + y(a) + '" width="' + bw + '" height="' + (Tm + ih - y(a)) + '"/>';
+      s += '<text class="val" x="' + cx + '" y="' + (y(a) - 5) + '" text-anchor="middle">' + n1(a) + '</text>';
+      if (r.target > 0) s += '<line class="tgt" x1="' + (cx - bw / 2 - 6) + '" x2="' + (cx + bw / 2 + 6) + '" y1="' + y(r.target) + '" y2="' + y(r.target) + '"/>';
+      s += '<text x="' + cx + '" y="' + (H - 10) + '" text-anchor="middle">' + fmtDay(r.ts) + '</text>';
+      return s;
+    }).join('');
+    return '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(T('chart.aria')) + '">' + g + '<text x="' + Lm + '" y="12">' + esc(T('unit.min')) + '</text>' + bars + '</svg>';
+  }
+
+  /* ---------- cài đặt ---------- */
+  function settingsView() {
+    var s = state.settings;
+    var seg = function (items, cur, act, key) {
+      return '<div class="lang" role="group">' + items.map(function (x) { return '<button data-a="' + act + '" data-' + key + '="' + x[0] + '" aria-pressed="' + (cur === x[0]) + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>';
+    };
+    var langSeg = seg([['vi', 'Tiếng Việt'], ['en', 'English'], ['both', 'Việt · English']], lang, 'lang', 'l');
+    var themeSeg = seg([['auto', T('theme.auto')], ['light', T('theme.light')], ['dark', T('theme.dark')]], s.theme, 'theme', 'v');
+    var chips = function (arr, act, fixed) {
+      return arr.map(function (m, i) {
+        return '<li class="mchip' + (fixed ? ' fixed' : '') + '"><span>' + esc(fixed ? reasonText(m) : nm(m)) + '</span>' +
+          (fixed ? '' : '<button class="ib" data-a="' + act + '" data-i="' + i + '" aria-label="' + esc(T('aria.rm')) + '">✕</button>') + '</li>';
+      }).join('');
+    };
+    var addRow = function (id, act, ph, label) {
+      return '<div class="row"><input type="text" id="' + id + '" data-enter="' + act + '" class="grow" style="width:auto" placeholder="' + esc(T(ph)) + '"><button class="btn" data-a="' + act + '">' + L(label) + '</button></div>';
+    };
+    var modelChips = s.models.map(function (m, i) {
+      return '<li class="mchip"><span>' + esc(m.from) + ' ➔ ' + esc(m.to) + '</span><button class="ib" data-a="model-del" data-i="' + i + '" aria-label="' + esc(T('aria.rm')) + '">✕</button></li>';
+    }).join('');
+    var chkRows = s.checklist.map(function (c, i) {
+      return '<li class="clrow"><span class="clt">' + nmh(c.text) + '</span>' +
+        '<button class="chip ' + (c.req ? 'pl' : 'opt') + '" data-a="chk-req" data-i="' + i + '" title="' + esc(T('chk.toggle')) + '">' + Li(c.req ? 'chk.req' : 'chk.opt') + '</button>' +
+        '<button class="ib" data-a="chk-up" data-i="' + i + '" aria-label="' + esc(T('aria.up')) + '"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+        '<button class="ib" data-a="chk-down" data-i="' + i + '" aria-label="' + esc(T('aria.down')) + '"' + (i === s.checklist.length - 1 ? ' disabled' : '') + '>↓</button>' +
+        '<button class="ib" data-a="chk-del" data-i="' + i + '" aria-label="' + esc(T('aria.rm')) + '">✕</button></li>';
+    }).join('');
+    return '<div class="stack">' +
+      '<div class="panel"><div class="grid2"><div><div class="sec-head"><h2 class="h2">' + L('set.lang.h') + '</h2></div>' + langSeg + '</div>' +
+      '<div><div class="sec-head"><h2 class="h2">' + L('set.theme.h') + '</h2></div>' + themeSeg + '</div></div></div>' +
+
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.mach.h') + '</h2></div><p class="muted" style="margin:0 0 12px">' + L('set.mach.d') + '</p>' +
+      '<ul class="chips">' + chips(s.machines, 'mach-del', false) + '</ul>' + addRow('mach-new', 'mach-add', 'ph.mach', 'set.mach.add') +
+      '<p style="margin:18px 0 0;font-weight:600">' + L('set.gen.h') + '</p>' +
+      '<div class="row" style="margin-top:8px">' +
+      '<label class="field" style="width:130px"><span>' + Li('set.gen.from') + '</span><input type="number" min="0" id="gen-from" value="1"></label>' +
+      '<label class="field" style="width:130px"><span>' + Li('set.gen.to') + '</span><input type="number" min="0" id="gen-to" value="10"></label>' +
+      '<button class="btn" data-a="mach-gen" style="align-self:flex-end">' + L('set.gen.btn') + '</button><span class="grow"></span>' +
+      '<span class="muted">' + Li('set.mach.count', { n: s.machines.length }) + '</span>' +
+      '<button class="btn danger' + (confirmSet === 'mach' ? ' armed' : '') + '" data-a="mach-clear">' + L(confirmSet === 'mach' ? 'set.mach.clear2' : 'set.mach.clear') + '</button></div></div>' +
+
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.model.h') + '</h2></div><p class="muted" style="margin:0 0 12px">' + L('set.model.d') + '</p>' +
+      '<ul class="chips">' + (modelChips || '<li class="muted">' + L('set.model.empty') + '</li>') + '</ul>' +
+      '<div class="row"><label class="field grow"><span>' + Li('set.model.a') + '</span><input type="text" id="model-from" data-enter="model-add" placeholder="880V15"></label>' +
+      '<span class="arrow" aria-hidden="true">➔</span>' +
+      '<label class="field grow"><span>' + Li('set.model.b') + '</span><input type="text" id="model-to" data-enter="model-add" placeholder="880V16"></label>' +
+      '<button class="btn" data-a="model-add" style="align-self:flex-end">' + L('set.model.add') + '</button></div>' +
+      '<label class="chkrow" style="margin-top:10px"><input type="checkbox" id="model-rev" checked><span>' + Li('set.model.rev') + '</span></label></div>' +
+
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.ppl.h') + '</h2></div><p class="muted" style="margin:0 0 12px">' + L('set.ppl.d') + '</p>' +
+      '<ul class="chips">' + (chips(s.people, 'ppl-del', false) || '<li class="muted">' + L('set.ppl.empty') + '</li>') + '</ul>' + addRow('ppl-new', 'ppl-add', 'ph.ppl', 'set.ppl.add') + '</div>' +
+
+      tplPanelHTML() +
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.chk.h') + '</h2></div><p class="muted" style="margin:0 0 12px">' + L('set.chk.d') + '</p>' +
+      '<ul class="cllist" style="margin-bottom:12px">' + (chkRows || '<li class="muted">' + L('set.chk.empty') + '</li>') + '</ul>' + addRow('chk-new', 'chk-add', 'ph.chk', 'set.chk.add') + '</div>' +
+
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.def.h') + '</h2></div><div class="grid2">' +
+      '<label class="field"><span>' + Li('set.def.target') + '</span><input type="number" min="0" step="0.5" data-set="target" value="' + esc(s.target) + '"></label>' +
+      '<label class="field"><span>' + Li('set.def.lead') + '</span>' + personSelect(s.lead, 'data-set="lead"') + '</label></div>' +
+      '<div class="field" style="margin-top:12px;align-items:flex-start"><span>' + Li('set.def.kind') + '</span>' + kindSeg(s.kind, 'set-kind') + '</div></div>' +
+
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.rsn.h') + '</h2></div><p class="muted" style="margin:0 0 12px">' + L('set.rsn.d') + '</p>' +
+      '<ul class="chips">' + chips(REASONS, '', true) + chips(s.reasons, 'rsn-del', false) + '</ul>' + addRow('rsn-new', 'rsn-add', 'ph.rsn', 'set.rsn.add') + '</div>' +
+
+      '<div class="panel"><div class="sec-head"><h2 class="h2">' + L('set.data.h') + '</h2></div><p class="muted" style="margin:0 0 12px">' + L('set.data.d') + '</p>' +
+      '<textarea id="data-box" rows="5" spellcheck="false" aria-label="' + esc(T('set.data.h')) + '">' + esc(JSON.stringify(state)) + '</textarea>' +
+      '<div class="row" style="margin-top:12px"><button class="btn" data-a="data-copy">' + L('set.copy') + '</button><button class="btn" data-a="data-restore">' + L('set.restore') + '</button><span class="grow"></span>' +
+      '<button class="btn danger' + (confirmSet === 'hist' ? ' armed' : '') + '" data-a="hist-clear">' + L(confirmSet === 'hist' ? 'set.clearHist2' : 'set.clearHist') + '</button>' +
+      '<button class="btn danger' + (confirmSet === 'reset' ? ' armed' : '') + '" data-a="app-reset">' + L(confirmSet === 'reset' ? 'set.reset2' : 'set.reset') + '</button></div>' +
+      '<p class="muted" style="margin:12px 0 0;font-size:13px">' + L('set.reset.d') + '</p></div></div>';
+  }
+
+  /* ---------- vẽ giao diện ---------- */
+  function render() {
+    renderTop(); renderNav();
+    $('#main').innerHTML = state.tab === 'plan' ? planView() : state.tab === 'exec' ? execView() : state.tab === 'set' ? settingsView() : histView();
+    tick();
+  }
+
+  /* ---------- sự kiện ---------- */
+  function stepById(p, id) { return p.steps.filter(function (s) { return s.id === id; })[0]; }
+  function move(arr, i, d) { var j = i + d; if (i < 0 || j < 0 || j >= arr.length) return; var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+  function copyName(n) {
+    if (n && typeof n === 'object') return { vi: n.vi + D['plan.copy'][0], en: n.en + D['plan.copy'][1] };
+    return (n || '') + (lang === 'en' ? D['plan.copy'][1] : D['plan.copy'][0]);
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-a]'); if (!a) return;
+    var act = a.dataset.a, sid = a.dataset.sid, p = curPlan(), r = state.active;
+    if (act !== 'plan-del') confirmDel = false;
+    if (act !== 'run-cancel') confirmCancel = false;
+    if (act !== 'hist-clear' && act !== 'app-reset' && act !== 'mach-clear') confirmSet = '';
+    switch (act) {
+      case 'theme': state.settings.theme = a.dataset.v; applyTheme(); save(); render(); return;
+      case 'mach-add':
+        var mi = $('#mach-new'), mv = mi ? mi.value.trim() : '';
+        if (mv && state.settings.machines.map(function (q) { return nm(q); }).indexOf(mv) < 0) { state.settings.machines.push(mv); save(); render(); var mf = $('#mach-new'); if (mf) mf.focus(); }
+        return;
+      case 'mach-gen':
+        var gf = Math.floor(num($('#gen-from').value)), gt = Math.floor(num($('#gen-to').value));
+        if (gt < gf || gt - gf > 99) { toast(T('t.genNone')); return; }
+        var have = {}, added = 0;
+        state.settings.machines.forEach(function (q) { have[mKey(q)] = 1; });
+        for (var gi = gf; gi <= gt; gi++) {
+          var nmx = { vi: 'Chuyền ' + gi, en: 'Line ' + gi };
+          if (!have[mKey(nmx)]) { state.settings.machines.push(nmx); have[mKey(nmx)] = 1; added++; }
+        }
+        if (!added) { toast(T('t.genNone')); return; }
+        state.settings.machines.sort(mCmp); save(); render(); toast(T('t.gen', { n: added })); return;
+      case 'mach-clear':
+        if (confirmSet !== 'mach') { confirmSet = 'mach'; render(); clearTimeout(hold); hold = setTimeout(function () { confirmSet = ''; if (state.tab === 'set') render(); }, 3000); return; }
+        confirmSet = ''; state.settings.machines = []; save(); render(); return;
+      case 'mach-del': state.settings.machines.splice(num(a.dataset.i), 1); save(); render(); return;
+      case 'model-add':
+        var mfrom = (($('#model-from') || {}).value || '').trim(), mto = (($('#model-to') || {}).value || '').trim(), mrev = $('#model-rev');
+        if (!mfrom || !mto || mKey(mfrom) === mKey(mto)) { toast(T('t.modelBad')); return; }
+        var mn = 0, hv = {}, pairs = [[mfrom, mto]];
+        if (mrev && mrev.checked) pairs.push([mto, mfrom]);
+        state.settings.models.forEach(function (q) { hv[pk(q.from, q.to)] = 1; });
+        pairs.forEach(function (q) { var k = pk(q[0], q[1]); if (!hv[k]) { hv[k] = 1; state.settings.models.push({ from: q[0], to: q[1] }); mn++; } });
+        if (!mn) { toast(T('t.modelBad')); return; }
+        save(); render(); toast(T('t.modelAdded', { n: mn })); var mff = $('#model-from'); if (mff) mff.focus(); return;
+      case 'model-del': state.settings.models.splice(num(a.dataset.i), 1); save(); render(); return;
+      case 'ppl-add':
+        var pi = $('#ppl-new'), pv = pi ? pi.value.trim() : '';
+        if (pv && state.settings.people.map(function (q) { return mKey(q); }).indexOf(mKey(pv)) < 0) { state.settings.people.push(pv); save(); render(); var pfo = $('#ppl-new'); if (pfo) pfo.focus(); }
+        return;
+      case 'ppl-del': state.settings.people.splice(num(a.dataset.i), 1); save(); render(); return;
+      case 'chk-add':
+        var ci = $('#chk-new'), cv = ci ? ci.value.trim() : '';
+        if (cv) { state.settings.checklist.push({ id: 'c' + uid(), text: cv, req: true }); save(); render(); var cfo = $('#chk-new'); if (cfo) cfo.focus(); }
+        return;
+      case 'chk-del': var cd = state.settings.checklist.splice(num(a.dataset.i), 1)[0]; if (cd) delete state.execChecks[cd.id]; save(); render(); return;
+      case 'chk-req': var cr = state.settings.checklist[num(a.dataset.i)]; if (cr) { cr.req = !cr.req; save(); render(); } return;
+      case 'chk-up': move(state.settings.checklist, num(a.dataset.i), -1); save(); render(); return;
+      case 'chk-down': move(state.settings.checklist, num(a.dataset.i), 1); save(); render(); return;
+      case 'set-kind': state.settings.kind = a.dataset.v === 'unplanned' ? 'unplanned' : 'planned'; save(); render(); return;
+      case 'exec-kind': state.execKind = a.dataset.v === 'unplanned' ? 'unplanned' : 'planned'; save(); render(); return;
+      case 'hist-kind': state.histKind = a.dataset.v; save(); render(); return;
+      case 'tpl-add':
+        state.settings.steps.push({ id: 't' + uid(), name: '', type: a.dataset.type === 'I' ? 'I' : 'E', min: 5, owner: '' }); save(); render();
+        var tin = $$('.srow[data-tid] input[data-tf="name"]'); if (tin.length) tin[tin.length - 1].focus(); return;
+      case 'tpl-del': state.settings.steps = state.settings.steps.filter(function (t) { return t.id !== a.dataset.tid; }); save(); render(); return;
+      case 'tpl-toggle': var tt = tplById(a.dataset.tid); if (tt) { tt.type = tt.type === 'I' ? 'E' : 'I'; save(); render(); } return;
+      case 'tpl-up': move(state.settings.steps, state.settings.steps.indexOf(tplById(a.dataset.tid)), -1); save(); render(); return;
+      case 'tpl-down': move(state.settings.steps, state.settings.steps.indexOf(tplById(a.dataset.tid)), 1); save(); render(); return;
+      case 'tpl-pick-add':
+        var pk2 = ($('#tpl-pick') || {}).value, ptl = pk2 && tplById(pk2);
+        if (p && ptl) { p.steps.push(fromTpl(ptl)); save(); render(); toast(T('t.tplAdded', { n: 1 })); }
+        return;
+      case 'tpl-add-missing':
+        if (!p) return;
+        var usedR = {}, addN = 0;
+        p.steps.forEach(function (q) { if (q.ref) usedR[q.ref] = 1; });
+        state.settings.steps.forEach(function (q) { if (!usedR[q.id]) { p.steps.push(fromTpl(q)); addN++; } });
+        if (addN) { save(); render(); toast(T('t.tplAdded', { n: addN })); }
+        return;
+      case 'plan-sync':
+        if (!p) return;
+        var syN = 0;
+        p.steps.forEach(function (q) { var tq = q.ref && tplById(q.ref); if (tq && tplDiff(q, tq)) { applyTpl(q, tq); syN++; } });
+        if (syN) { save(); render(); toast(T('t.tplSynced', { n: syN })); }
+        return;
+      case 'step-reset-tpl':
+        var sq = p && stepById(p, sid), tq2 = sq && sq.ref && tplById(sq.ref);
+        if (tq2) { applyTpl(sq, tq2); save(); render(); }
+        return;
+      case 'rsn-add':
+        var ri = $('#rsn-new'), rv = ri ? ri.value.trim() : '';
+        if (rv && state.settings.reasons.indexOf(rv) < 0) { state.settings.reasons.push(rv); save(); render(); var rf = $('#rsn-new'); if (rf) rf.focus(); }
+        return;
+      case 'rsn-del': state.settings.reasons.splice(num(a.dataset.i), 1); save(); render(); return;
+      case 'data-copy':
+        var box = $('#data-box'); if (!box) return; box.select();
+        try { navigator.clipboard.writeText(box.value).then(function () { toast(T('t.copied')); }, function () { toast(T('t.copyFail')); }); } catch (err) { toast(T('t.copyFail')); }
+        return;
+      case 'data-restore':
+        try {
+          var obj = JSON.parse($('#data-box').value);
+          if (!obj || !Array.isArray(obj.plans) || !Array.isArray(obj.runs)) throw new Error('bad');
+          state = obj; ensureSettings(); lang = state.lang === 'vi' || state.lang === 'en' ? state.lang : 'both'; state.tab = 'set';
+          applyTheme(); save(); render(); toast(T('t.restored'));
+        } catch (err2) { toast(T('set.restoreErr')); }
+        return;
+      case 'hist-clear':
+        if (confirmSet !== 'hist') { confirmSet = 'hist'; render(); clearTimeout(hold); hold = setTimeout(function () { confirmSet = ''; if (state.tab === 'set') render(); }, 3000); return; }
+        confirmSet = ''; state.runs = []; openRun = null; save(); render(); toast(T('t.histCleared')); return;
+      case 'app-reset':
+        if (confirmSet !== 'reset') { confirmSet = 'reset'; render(); clearTimeout(hold); hold = setTimeout(function () { confirmSet = ''; if (state.tab === 'set') render(); }, 3000); return; }
+        confirmSet = ''; state = seed(); state.lang = lang; state.tab = 'set'; ensureSettings(); applyTheme(); openRun = null; save(); render(); toast(T('t.reset')); return;
+      case 'lang': lang = a.dataset.l; state.lang = lang; save(); render(); return;
+      case 'tab': state.tab = a.dataset.t; save(); render(); return;
+      case 'goto-exec': state.execPlan = p.id; state.tab = 'exec'; save(); render(); return;
+      case 'plan-new':
+        var np = { id: uid(), name: o(D['plan.newName'][0], D['plan.newName'][1]), machine: state.settings.machines[0] || '', from: '', to: '', kind: state.settings.kind === 'unplanned' ? 'unplanned' : 'planned', target: state.settings.target, steps: state.settings.steps.length ? state.settings.steps.map(fromTpl) : [mkStep('', 'E', 5, ''), mkStep('', 'I', 5, '')] };
+        state.plans.push(np); state.selPlan = np.id; state.tab = 'plan'; save(); render(); return;
+      case 'plan-dup':
+        if (!p) return;
+        var cp = JSON.parse(JSON.stringify(p)); cp.id = uid(); cp.example = false; cp.name = copyName(p.name);
+        cp.steps.forEach(function (s) { s.id = uid(); });
+        state.plans.push(cp); state.selPlan = cp.id; save(); render(); toast(T('t.dup')); return;
+      case 'plan-del':
+        if (!p) return;
+        if (!confirmDel) { confirmDel = true; render(); clearTimeout(hold); hold = setTimeout(function () { confirmDel = false; if (state.tab === 'plan') render(); }, 3000); return; }
+        confirmDel = false; state.plans = state.plans.filter(function (x) { return x.id !== p.id; });
+        state.selPlan = state.plans[0] ? state.plans[0].id : null; save(); render(); toast(T('t.del')); return;
+      case 'step-add': p.steps.push(mkStep('', a.dataset.type, 5, '')); save(); render();
+        var ins = $$('.srow input[data-sf="name"]'); if (ins.length) ins[ins.length - 1].focus(); return;
+      case 'step-del': p.steps = p.steps.filter(function (s) { return s.id !== sid; }); save(); render(); return;
+      case 'step-toggle': var s1 = stepById(p, sid); if (s1) { s1.type = s1.type === 'I' ? 'E' : 'I'; save(); render(); } return;
+      case 'step-up': move(p.steps, p.steps.indexOf(stepById(p, sid)), -1); save(); render(); return;
+      case 'step-down': move(p.steps, p.steps.indexOf(stepById(p, sid)), 1); save(); render(); return;
+
+      case 'run-start':
+        var pl = state.plans.filter(function (x) { return x.id === state.execPlan; })[0]; if (!pl || !pl.steps.length) return;
+        var chkAll = state.settings.checklist;
+        if (!chkAll.filter(function (c) { return c.req; }).every(function (c) { return state.execChecks[c.id]; })) { render(); return; }
+        var rpair = state.execModel ? pairByKey(state.execModel, { from: pl.from, to: pl.to }) : { from: pl.from, to: pl.to };
+        state.active = { id: uid(), planId: pl.id, planName: pl.name, machine: state.execLine ? lineByKey(state.execLine, pl.machine) : pl.machine, from: rpair.from, to: rpair.to,
+          kind: state.execKind === 'unplanned' || state.execKind === 'planned' ? state.execKind : (pl.kind === 'unplanned' ? 'unplanned' : 'planned'),
+          checks: chkAll.map(function (c) { return { text: c.text, req: !!c.req, done: !!state.execChecks[c.id] }; }),
+          target: num(pl.target), operator: state.operator, startedAt: Date.now(),
+          steps: pl.steps.map(function (s) { return { id: s.id, name: s.name, type: s.type, plan: num(s.min), owner: s.owner, startedAt: null, endedAt: null, reason: '' }; }) };
+        state.execChecks = {}; state.execModel = ''; state.execKind = '';
+        save(); render(); return;
+      case 'step-start': var x = r && r.steps.filter(function (s) { return s.id === sid; })[0]; if (x) { x.startedAt = Date.now(); x.endedAt = null; save(); render(); } return;
+      case 'step-done': var y = r && r.steps.filter(function (s) { return s.id === sid; })[0]; if (y) { y.endedAt = Date.now(); save(); render(); } return;
+      case 'step-reset': var z = r && r.steps.filter(function (s) { return s.id === sid; })[0]; if (z) { z.startedAt = null; z.endedAt = null; z.reason = ''; save(); render(); } return;
+      case 'run-cancel':
+        if (!confirmCancel) { confirmCancel = true; render(); clearTimeout(hold); hold = setTimeout(function () { confirmCancel = false; if (state.tab === 'exec') render(); }, 3000); return; }
+        confirmCancel = false; state.active = null; save(); render(); toast(T('t.cancel')); return;
+      case 'run-finish':
+        if (!r || !r.steps.every(function (s) { return s.endedAt; })) return;
+        var now = Date.now(), d = downInfo(r, now);
+        var rec = { id: uid(), ts: r.startedAt, machine: r.machine, from: r.from, to: r.to, operator: r.operator, planName: r.planName, kind: r.kind === 'unplanned' ? 'unplanned' : 'planned', checks: r.checks || null,
+          planDown: r.steps.filter(function (s) { return s.type === 'I'; }).reduce(function (t, s) { return t + s.plan; }, 0),
+          target: r.target, actualDown: Math.round(d.ms / 1000), totalSec: Math.round((now - r.startedAt) / 1000),
+          steps: r.steps.map(function (s) { return { name: s.name, type: s.type, plan: s.plan, actual: Math.round((s.endedAt - s.startedAt) / 1000), reason: s.reason }; }) };
+        state.runs.unshift(rec); state.active = null; state.tab = 'hist'; openRun = rec.id; save(); render(); toast(T('t.saved')); return;
+      case 'run-open': openRun = openRun === a.dataset.rid ? null : a.dataset.rid; render(); return;
+      case 'clear-ex':
+        state.runs = state.runs.filter(function (q) { return !q.example; });
+        state.plans = state.plans.filter(function (q) { return !q.example; });
+        state.selPlan = state.plans[0] ? state.plans[0].id : null; state.execPlan = state.selPlan; save(); render(); toast(T('t.cleared')); return;
+    }
+  });
+
+  function onInput(e) {
+    var t = e.target, p = curPlan();
+    if (t.dataset.pf && p) {
+      if (t.dataset.pf === 'model') { var pr = t.value ? pairByKey(t.value, { from: p.from, to: p.to }) : { from: '', to: '' }; p.from = pr.from; p.to = pr.to; }
+      else p[t.dataset.pf] = t.dataset.pf === 'target' ? num(t.value) : t.dataset.pf === 'machine' ? lineByKey(t.value, p.machine) : t.value;
+      p.example = false;
+      if (t.dataset.pf === 'name') { var op = $('#plan-select option:checked'); if (op) op.textContent = t.value || T('unnamed.plan'); }
+      save(); updatePlanSum();
+    } else if (t.dataset.sf && p) {
+      var row = t.closest('[data-sid]'), s = row && stepById(p, row.dataset.sid);
+      if (s) { s[t.dataset.sf] = t.dataset.sf === 'min' ? num(t.value) : t.dataset.sf === 'owner' ? personByKey(t.value, s.owner) : t.value; save(); if (t.dataset.sf !== 'owner') updatePlanSum(); refreshLinks(); }
+    } else if (t.dataset.tf) {
+      var trow = t.closest('[data-tid]'), tp = trow && tplById(trow.dataset.tid);
+      if (tp) { tp[t.dataset.tf] = t.dataset.tf === 'min' ? num(t.value) : t.dataset.tf === 'owner' ? personByKey(t.value, tp.owner) : t.value; save(); var tsum = $('#tpl-sum'); if (tsum) tsum.innerHTML = tplSumHTML(); }
+    } else if (t.dataset.of) { state.operator = personByKey(t.value, state.operator); save();
+    } else if (t.dataset.set) {
+      if (t.dataset.set === 'target') state.settings.target = num(t.value);
+      else { var ld = personByKey(t.value, state.settings.lead); state.settings.lead = ld; state.operator = ld; }
+      save();
+    }
+  }
+  document.addEventListener('input', onInput);
+  document.addEventListener('change', onInput);
+  document.addEventListener('change', function (e) {
+    var t = e.target, c = t.dataset.ch;
+    if (t.dataset.chk) { state.execChecks[t.dataset.chk] = t.checked; save(); render(); var cf2 = $('[data-chk="' + t.dataset.chk + '"]'); if (cf2) cf2.focus(); return; }
+    if (!c) return;
+    if (c === 'plan-select') { state.selPlan = t.value; confirmDel = false; save(); render(); }
+    else if (c === 'exec-plan') { state.execPlan = t.value; state.execLine = ''; state.execModel = ''; state.execKind = ''; save(); render(); }
+    else if (c === 'exec-line') { state.execLine = t.value; save(); render(); }
+    else if (c === 'exec-model') { state.execModel = t.value; save(); render(); }
+    else if (c === 'reason' && state.active) { var s = state.active.steps.filter(function (x) { return x.id === t.dataset.sid; })[0]; if (s) { s.reason = t.value; save(); } }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' || !e.target.dataset || !e.target.dataset.enter) return;
+    var b = $('[data-a="' + e.target.dataset.enter + '"]'); if (b) b.click();
+  });
+
+  render();
+  setInterval(tick, 1000);
+})();
+</script>
+
+</body></html>
