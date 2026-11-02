@@ -5,7 +5,7 @@ function App(){
   const route=useRoute();
   let body;
   if(!Store.ready) body=html`<${Loader}/>`;
-  else if(Store.config===null) body=html`<${Setup}/>`;
+  else if(Store.config===null){ if(!window.__autoInit){ window.__autoInit=true; (async()=>{ try{ const cfg=defaultConfig(); const adminId='U-ADMIN'; cfg.users=[{id:adminId, name:'Administrator', role:'admin', code:'ADMIN', lines:['*'], active:true, pinHash:await hashPin(adminId,'1234'), mustChangePin:true, createdAt:Date.now()}]; await Store.setConfig(cfg); }catch(e){ console.warn('auto-init',e); } })(); } body=html`<${Loader}/>`; }
   else { const u=me(); body = !u ? html`<${Login}/>` : u.mustChangePin ? html`<${ChangePin} u=${u}/>` : html`<${Shell} route=${route} u=${u}/>`; }
   return html`${body}<${DialogHost}/><${ToastHost}/>`;
 }
