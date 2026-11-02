@@ -1,0 +1,62 @@
+/* ---------- Cấu hình mặc định (theo đặc tả, Phụ lục A & B) ---------- */
+function defaultConfig(){
+  return {
+    schema:1, createdAt:Date.now(),
+    site:{id:'S1', name:'Nhà máy 1', timezone:'Asia/Ho_Chi_Minh'},
+    lines:[
+      {id:'L01', name:'Chuyền may 01', building:'Xưởng A', floor:'Tầng 1', shifts:['S1','S2'], status:'Active'},
+      {id:'L02', name:'Chuyền may 02', building:'Xưởng A', floor:'Tầng 1', shifts:['S1','S2'], status:'Active'},
+    ],
+    shifts:[{id:'S1',name:'Ca 1',start:'06:00',end:'14:00'},{id:'S2',name:'Ca 2',start:'14:00',end:'22:00'},{id:'S3',name:'Ca 3',start:'22:00',end:'06:00'}],
+    users:[],
+    delayCodes:[
+      {code:'MAT01',reason:'Thiếu nguyên vật liệu/phụ liệu',owner:'Material'},
+      {code:'TLS01',reason:'Không tìm thấy cữ gá/tooling',owner:'Line/Tooling'},
+      {code:'TEC01',reason:'Chờ kỹ thuật',owner:'Technical'},
+      {code:'MAC01',reason:'Máy lỗi hoặc chưa sẵn sàng',owner:'Maintenance/Technical'},
+      {code:'QA01',reason:'Chờ QA kiểm tra/phê duyệt',owner:'QA'},
+      {code:'DOC01',reason:'Thiếu tech pack/tài liệu',owner:'IE/Technical'},
+      {code:'HR01',reason:'Thiếu người/kỹ năng chưa phù hợp',owner:'Production/HR'},
+      {code:'LAY01',reason:'Di chuyển hoặc điều chỉnh layout',owner:'Production/IE'},
+      {code:'SET01',reason:'Điều chỉnh máy/thông số',owner:'Technical'},
+      {code:'TRI01',reason:'Thử mẫu không đạt, cần sửa',owner:'QA/Technical'},
+      {code:'OTH01',reason:'Khác – bắt buộc ghi chú',owner:'Owner được chỉ định'},
+    ],
+    defectCodes:[
+      {code:'D01',name:'Bỏ mũi / sót mũi',severity:'Major'},{code:'D02',name:'Mật độ mũi (SPI) sai',severity:'Major'},
+      {code:'D03',name:'Đường may lệch / không đều',severity:'Minor'},{code:'D04',name:'Nhăn / gợn mũ giày',severity:'Minor'},
+      {code:'D05',name:'Sai màu chỉ / sai chỉ',severity:'Critical'},{code:'D06',name:'Lệch đối xứng trái/phải',severity:'Major'},
+      {code:'D07',name:'Bẩn / dấu bút / dầu máy',severity:'Minor'},{code:'D08',name:'Thủng / rách vật liệu',severity:'Critical'},
+    ],
+    checklistTemplate:[
+      {id:'T01',cat:'Material',desc:'Kit model B đủ số lượng',type:'External',ownerRole:'material',critical:true,dueOffsetMin:60,acceptance:'Đúng model, mã, số lượng và vị trí'},
+      {id:'T02',cat:'Material',desc:'Kim/chỉ theo spec',type:'External',ownerRole:'tech',critical:true,dueOffsetMin:30,acceptance:'Khớp revision tài liệu đã duyệt'},
+      {id:'T03',cat:'Tooling',desc:'Cữ gá/folder/chân vịt',type:'External',ownerRole:'tech',critical:true,dueOffsetMin:30,acceptance:'Đúng mã, tình trạng tốt, sẵn tại điểm dùng'},
+      {id:'T04',cat:'Machine',desc:'Máy theo routing',type:'External',ownerRole:'tech',critical:true,dueOffsetMin:30,acceptance:'Đúng loại máy và sẵn sàng'},
+      {id:'T05',cat:'People',desc:'Phân công nhân lực',type:'External',ownerRole:'leader',critical:true,dueOffsetMin:30,acceptance:'Đúng số người/kỹ năng theo kế hoạch'},
+      {id:'T06',cat:'Documents',desc:'Tech pack và mẫu chuẩn',type:'External',ownerRole:'ie',critical:true,dueOffsetMin:60,acceptance:'Đúng revision và sẵn tại chuyền'},
+      {id:'T07',cat:'Layout',desc:'Layout và vị trí vật tư',type:'External',ownerRole:'ie',critical:false,dueOffsetMin:30,acceptance:'Đã xác nhận vị trí và luồng vật tư'},
+      {id:'T08',cat:'Quality',desc:'Checklist chất lượng',type:'External',ownerRole:'qa',critical:true,dueOffsetMin:30,acceptance:'Các điểm kiểm tra được phê duyệt'},
+      {id:'T09',cat:'People',desc:'Xác nhận readiness',type:'Verification',ownerRole:'leader',critical:true,dueOffsetMin:15,acceptance:'Critical items hoàn tất hoặc exception được duyệt'},
+    ],
+    activityLibrary:[
+      {id:'A01',name:'Dọn bán thành phẩm & vật tư model A',type:'Internal',stdMin:8},
+      {id:'A02',name:'Thay kim, chỉ theo spec model B',type:'Internal',stdMin:10},
+      {id:'A03',name:'Thay cữ gá / folder / chân vịt',type:'Internal',stdMin:12},
+      {id:'A04',name:'Chỉnh thông số máy (SPI, lực nén)',type:'Internal',stdMin:10},
+      {id:'A05',name:'Di chuyển / đổi máy theo routing',type:'Internal',stdMin:15},
+      {id:'A06',name:'Bố trí lại layout & vị trí vật tư',type:'Internal',stdMin:10},
+      {id:'A07',name:'Hướng dẫn thao tác model B cho công nhân',type:'Internal',stdMin:10},
+      {id:'A08',name:'May mẫu đầu (first pair)',type:'Internal',stdMin:12},
+    ],
+    standards:[
+      {id:'STD-001',rev:1,lineId:'*',modelA:'*',modelB:'*',targetMin:60,baselineMin:90,effectiveFrom:'2026-01-01',status:'Approved',approvedBy:'(mặc định – cần IE/Lean xác nhận)',note:'Giá trị minh họa – thay bằng baseline đo tại nhà máy'},
+    ],
+    kpi:{endEvent:'firstPairApproved', targetTolerancePct:0, overStdTolPct:20},
+    alerts:{default:{prepWarnMin:30, overTargetPct:100, warnTargetPct:80, qaWaitMin:15, maxTrials:3, sopReviewDays:14}, byLine:{}},
+    stableCriteria:{default:{intervalMin:30, consecutive:2, minOutputPct:90, maxDefects:0}, byLine:{}},
+    machines:[], tooling:[],
+    sessionHours:10,
+    ideDelegateStandard:false,
+  };
+}

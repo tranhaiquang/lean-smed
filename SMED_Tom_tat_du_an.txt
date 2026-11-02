@@ -1,0 +1,160 @@
+TÓM TẮT DỰ ÁN SMED APP – VIETNAM SAMHO
+Cập nhật: 02/11/2026
+======================================================================
+
+1. MỤC TIÊU
+----------------------------------------------------------------------
+Xây dựng app SMED quản lý đổi model (changeover) cho chuyền may giày,
+theo tài liệu "SMED App Detailed Functional Specification v2.0".
+Mục tiêu: giảm thời gian dừng chuyền khi đổi model, có số liệu đo thật,
+kiểm soát chất lượng mẫu đầu, và cải tiến liên tục (Kaizen).
+
+2. CÁC FILE / LINK ĐÃ GIAO
+----------------------------------------------------------------------
+- App trên claude.ai (dữ liệu dùng chung, thời gian thực):
+  https://claude.ai/artifact/HsWUi23JNka5a43NatxEhb
+- SMED_App_standalone.html : bản độc lập, không kèm dữ liệu, chạy offline.
+- SMED_App_VietnamSamho_31-10.html : bản độc lập KÈM dữ liệu thật
+  (chốt 31/10 15:59: 26 người dùng, 7 changeover, 3 model, 9 chuyền).
+  Dùng vùng nhớ trình duyệt riêng, không bị lẫn với bản standalone.
+- SMED_web_vercel.zip : gói đưa lên Vercel (index.html + icon + manifest
+  + service worker) – KHÔNG kèm dữ liệu.
+- SMED_Mau_Danh_Sach_Nguoi_Dung.xlsx : mẫu nhập 24 người dùng từ Excel.
+- SMED_QR_link.png : mã QR dẫn tới app claude.ai.
+- Claude Doc "Quy trình triển khai SMED App":
+  https://claude.ai/artifact/Sm8wdrn3wTL6g21xCoY739
+
+3. CHỨC NĂNG APP (9 MENU)
+----------------------------------------------------------------------
+1) Dashboard: KPI (tổng changeover, internal time TB, % đạt target,
+   first pair pass, % chuẩn bị), trạng thái trực tiếp, Pareto lý do chờ,
+   Kaizen, cảnh báo. Bộ lọc ngày/building/chuyền/ca/khách/model/trạng thái.
+2) Changeover: Plan → Prepare → Execute → Quality Gate → Ramp-up → Review.
+   Trạng thái: Nháp, Đã lập kế hoạch, Đang chuẩn bị, Sẵn sàng đổi,
+   Đang changeover, Chờ chất lượng, Sửa/thử lại, Đã release,
+   Chạy ổn định, Đã đóng, Đã hủy. Mỗi bước có điều kiện chuyển (gate).
+3) Chuẩn bị: checklist external (vật tư, máy, tooling, nhân lực, tài liệu,
+   QA), bằng chứng/ảnh, N/A cần duyệt, báo chặn → escalate, verify.
+4) Quality Gate: First Pair – điểm kiểm tra, mã lỗi, Pass/Fail/Rework/Hold,
+   kết quả fail không ghi đè, escalation khi lặp lỗi/vượt số lần thử.
+5) Model Library: routing theo revision (máy, kim, chỉ, SPI, kiểu mũi,
+   tooling), điểm kiểm tra QA, so sánh A/B tự động, dán từ Excel.
+6) Standard Work / SOP: các bước internal/external, thời gian chuẩn,
+   duyệt, ngày review; cấp danh sách bước cho màn hình bấm giờ.
+7) Kaizen & AI Coach: 5 Why, xương cá, countermeasure, xác minh bằng số
+   đo sau cải tiến; AI chỉ đề xuất, Lean/IE phải duyệt.
+8) Báo cáo: xu hướng, theo chuyền/cặp model, Gantt time study, Pareto,
+   xuất Excel nhiều sheet theo bộ lọc.
+9) Cài đặt: người dùng (nhập từ Excel), nhà máy/chuyền/ca, delay code
+   (Phụ lục A), mã lỗi, checklist mẫu (Phụ lục B), thư viện hoạt động,
+   standard time/baseline, KPI & ngưỡng cảnh báo & tiêu chí ổn định,
+   máy & tooling, ma trận phân quyền (chỉnh được), audit log,
+   sao lưu/khôi phục JSON, xóa dữ liệu demo.
+
+Nguyên tắc KPI: downtime và waiting loss tính bằng hợp các khoảng thời gian
+(hoạt động song song không cộng trùng). Mọi thay đổi quan trọng có audit
+(ai, lúc nào, trước/sau, lý do).
+
+4. PHÂN QUYỀN & ĐĂNG NHẬP
+----------------------------------------------------------------------
+- 10 vai trò: System Admin, Lean Manager, Production Manager, Line Leader,
+  IE Engineer, Technician, QA, Material Handler, Operator, Management.
+- Mỗi người 1 tài khoản + PIN riêng (lưu dạng băm), giới hạn theo chuyền.
+- Mỗi việc phải do đúng người được giao tự bấm (Admin không cập nhật
+  checklist thay). Nút "Đổi người dùng" ở thanh trên.
+- Ma trận phân quyền chỉnh được (Cài đặt → Phân quyền), có ô khóa bắt buộc:
+  QA First Pair luôn thuộc QA; Cấu hình hệ thống/Sao lưu luôn có Admin;
+  sửa giờ sau khi đóng không cấp cho Leader/Operator/Kho.
+- Mã chuyền trong app: L01–L06 = STT_A1–STT_A6, L07–L09 = STT_B1–STT_B3.
+  Phạm vi chuyền ghi bằng mã (vd L01), KHÔNG ghi "A1".
+
+5. TÍNH NĂNG BỔ SUNG THEO YÊU CẦU
+----------------------------------------------------------------------
+- Ngôn ngữ: Tiếng Việt / English / 한국어 (~1.180 chuỗi đã dịch; dữ liệu
+  người dùng tự nhập giữ nguyên). Excel xuất ra theo ngôn ngữ đang chọn.
+- Giao diện: Tự động / Điện thoại / Máy tính. Điện thoại có thanh menu
+  đáy (Tổng quan, Changeover, Chuẩn bị, Quality, Khác), danh sách dạng thẻ,
+  nút lớn. Lựa chọn lưu riêng trên từng thiết bị.
+- Gợi ý khi thiếu người theo vai trò; nhập người dùng hàng loạt từ Excel
+  (5 cột: Họ tên | Mã NV | Vai trò | Phạm vi chuyền | PIN tạm).
+- Bản HTML kèm dữ liệu tĩnh; nút "Nạp dữ liệu đóng gói" khi có bản mới.
+
+6. NƠI LƯU DỮ LIỆU
+----------------------------------------------------------------------
+- Bản claude.ai: cơ sở dữ liệu của artifact trên máy chủ Anthropic, dùng
+  chung thời gian thực; xóa artifact là mất dữ liệu. Mất mạng: thao tác giữ
+  tạm trên máy và tự đồng bộ. Giới hạn ~25.000 bản ghi, 256 KB/bản ghi.
+- Bản HTML/Vercel: bộ nhớ trình duyệt của từng thiết bị (~5 MB), không
+  dùng chung giữa các máy.
+- Sao lưu: Cài đặt → Sao lưu & dữ liệu → Tải bản sao lưu JSON (mỗi tuần);
+  Báo cáo → Xuất Excel (mỗi tháng).
+
+7. CÁCH TRIỂN KHAI / PHÁT HÀNH
+----------------------------------------------------------------------
+Mức 1 – claude.ai (đang dùng):
+  - Share → mời từng người bằng email. Cùng tổ chức Team/Enterprise:
+    Contributor; tài khoản cá nhân: Editor. KHÔNG bật link công khai
+    (khi bật, người ngoài tổ chức chỉ xem được, không ghi được).
+  - Mỗi người đăng nhập claude.ai bằng đúng email được mời → chọn tên + PIN.
+  - Thêm vào màn hình chính: Android Chrome ⋮ → Thêm vào màn hình chính;
+    iPhone Safari → Chia sẻ → Thêm vào MH chính.
+Mức 2 – PWA + máy chủ dữ liệu (khuyến nghị khi mở rộng):
+  - Cần IT chọn Supabase (cloud) hoặc máy chủ nội bộ + cách đăng nhập
+    (PIN hay tài khoản công ty). Sau đó sửa lớp lưu trữ, kiểm tra quyền
+    phía máy chủ, phát qua mã QR.
+Mức 3 – APK Android / app iPhone: đóng gói từ Mức 2 (Capacitor);
+  iPhone cần Apple Developer 99 USD/năm.
+Vercel (tĩnh): giải nén SMED_web_vercel.zip → vercel.com/drop → đăng nhập
+  → kéo thả thư mục → đặt tên dự án (vd samho-smed) → Deploy.
+  Lưu ý: dữ liệu không dùng chung giữa máy; KHÔNG đưa file kèm dữ liệu lên
+  địa chỉ công khai.
+
+8. QUY TRÌNH TRIỂN KHAI THỰC TẾ (PILOT 6–8 TUẦN)
+----------------------------------------------------------------------
+GĐ1 (1–2 tuần): lập nhóm dự án, chọn chuyền pilot, đo baseline 3–5 lần
+  (video/đồng hồ), chốt start/end event, delay code, điều kiện release,
+  tiêu chí ổn định; chuẩn bị tablet, Wi-Fi.
+GĐ2 (1 tuần): nhập người dùng, chuyền, ca, standard time thật; routing
+  model, điểm kiểm tra QA, SOP.
+GĐ3 (3–5 ngày): đào tạo theo vai trò bằng dữ liệu demo; xóa demo; đổi PIN.
+GĐ4 (4–6 tuần): mọi changeover chạy qua app; kiểm dữ liệu hằng ngày;
+  Pareto + Kaizen hằng tuần. Tiêu chí: ≥90% changeover ghi đủ, ≥10 lần dữ
+  liệu tin cậy, người dùng tự thao tác, internal time giảm (thường 20–40%).
+GĐ5: chuẩn hóa SOP/standard, mở rộng 2–3 chuyền/đợt, lên Mức 2 khi ≥5 chuyền.
+Rủi ro: dùng số liệu để phạt người, thiếu người phụ trách app, mở rộng quá
+sớm, đo mà không cải tiến, quên sao lưu.
+
+9. MỘT LẦN CHANGEOVER THỰC TẾ (AI LÀM GÌ)
+----------------------------------------------------------------------
+Hôm trước  – Production Manager: tạo & xác nhận kế hoạch, phân công 5 vai trò.
+T−2 giờ    – Line Leader: Bắt đầu chuẩn bị.
+T−2h→T−15' – Kho/Kỹ thuật/IE/QA: hoàn thành checklist + bằng chứng;
+             IE/Tech/QA đóng khác biệt A/B (Xác minh hoặc tạo task).
+T−5'       – Line Leader: Sẵn sàng dừng chuyền.
+T0         – Line Leader: DỪNG CHUYỀN · BẮT ĐẦU (start event).
+Trong lúc  – Bấm Bắt đầu/Dừng từng thao tác; chờ thì bấm "Khoảng chờ"
+             + delay code.
+Xong setup – Line Leader: Gửi mẫu thử → QA: Pass/Fail (Fail: ghi hành động
+             sửa → gửi lại).
+Pass       – Production: Release sản xuất.
+Sau đó     – Ghi sản lượng mỗi 30 phút → đạt tiêu chí → Stable Run.
+Hôm sau    – Lean/Production: Review, delay code, bài học, Kaizen → Đóng.
+
+10. KIỂM THỬ
+----------------------------------------------------------------------
+35/35 kịch bản nghiệm thu (mục 10 đặc tả) đạt: thiếu Model B không cho
+Planned; critical chưa xong không cho Ready; timer ghi giờ + người;
+song song không cộng trùng downtime; sửa giờ sau đóng cần quyền + lý do +
+audit; First Pair Fail không cho release; QA Pass lưu người duyệt; đổi
+revision routing không ảnh hưởng changeover cũ; người ngoài phạm vi không
+sửa được; tổng KPI xuất Excel khớp nguồn; Kaizen đóng cần số đo sau cải tiến.
+Đã chạy thử mọi màn hình ở VI/EN/KO, khổ điện thoại và máy tính, không lỗi.
+
+11. VIỆC CẦN LÀM TIẾP
+----------------------------------------------------------------------
+- Sửa tài khoản "Nguyễn Văn A": phạm vi "A1" → "L01" (hoặc ngưng).
+- Nhập routing cho các model (U740V2, MW880V16…) và duyệt revision.
+- Thay target/baseline minh họa bằng số đo baseline tại nhà máy.
+- Nhờ người Hàn rà soát bản dịch tiếng Hàn.
+- Quyết định với IT về Mức 2 (nơi đặt dữ liệu + cách đăng nhập).
+- Sao lưu JSON hằng tuần.

@@ -1,0 +1,15 @@
+/* ===================== QUALITY GATE BOARD ===================== */
+function QualityBoard(){
+  const now=useNow(5000); const all=vals(Store.data.changeovers).filter(c=>inScope(c.lineId));
+  const waiting=all.filter(c=>['AwaitingQuality','Rework'].includes(c.status));
+  const [days,setDays]=useState(30);
+  const recent=all.filter(c=>vals(c.trials).some(t=>t.decidedAt && t.decidedAt>now-days*86400000));
+  const defects=[]; recent.forEach(c=>vals(c.trials).forEach(t=>vals(t.defects).forEach(d=>defects.push({...d, co:c.id, line:c.lineId, model:c.modelB, trial:t.seq, at:t.decidedAt}))));
+  const byCode={}; defects.forEach(d=>{ byCode[d.code]=(byCode[d.code]||0)+(+d.qty||1); });
+  return html`<div class="col"><h1>Quality Gate</h1>
+    <div class="card"><div class="card-h"><h3>Hàng chờ QA</h3><span class="small muted">${waiting.length}</span></div>
+      ${waiting.length?html`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Changeover</th><th>Chuyền</th><th>Model B</th><th>Lần thử</th><th>Trạng thái</th><th class="r">Đã chờ</th></tr></thead><tbody>${waiting.map(c=>{ const tr=vals(c.trials).sort(by('seq')).pop(); const w=tr&&!tr.decision?now-tr.sentAt:null; return html`<tr class="click" onClick=${()=>{ sessionStorage.setItem('smed.tab','qg'); go('co-'+c.id); }}><td class="mono small">${c.id}</td><td>${lineName(c.lineId)}</td><td><b>${modelLabel(c.modelB)}</b></td><td>${tr?.seq||'—'}</td><td>${tr?.decision==='Pass'?html`<span class="pill p-green">Pass – chờ release</span>`:html`<${Pill} status=${c.status}/>`}</td><td class="r mono" style=${w && w>alertCfg(c.lineId).qaWaitMin*60000?'color:var(--bad);font-weight:700':''}>${w?fmtClock(w):'—'}</td></tr>`; })}</tbody></table></div>`:html`<div class="note ok small">Không có mẫu chờ QA.</div>`}</div>
+    <div class="card"><div class="card-h"><h3>Defect log</h3><${Seg} value=${days} onChange=${setDays} options=${[{v:7,l:'7 ngày'},{v:30,l:'30 ngày'},{v:90,l:'90 ngày'}]}/></div>
+      <div class="row" style="margin-bottom:10px">${Object.entries(byCode).sort((a,b)=>b[1]-a[1]).map(([c,n])=>html`<span class="tag" style="font-size:12px">${c} · ${(Store.config.defectCodes||[]).find(x=>x.code===c)?.name||''}: <b>${n}</b></span>`)}</div>
+      ${defects.length?html`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Thời điểm</th><th>Changeover</th><th>Chuyền</th><th>Model</th><th>Lần</th><th>Mã</th><th>Severity</th><th>Vị trí</th><th class="r">SL</th></tr></thead><tbody>${defects.sort((a,b)=>b.at-a.at).map(d=>html`<tr class="click" onClick=${()=>go('co-'+d.co)}><td class="num small">${fmtDT(d.at)}</td><td class="mono small">${d.co}</td><td>${lineName(d.line)}</td><td>${modelLabel(d.model)}</td><td>${d.trial}</td><td class="mono">${d.code}</td><td>${d.severity}</td><td>${d.location}</td><td class="r">${d.qty}</td></tr>`)}</tbody></table></div>`:html`<div class="muted small">Không có lỗi ghi nhận trong khoảng này.</div>`}</div></div>`;
+}

@@ -1,1 +1,9 @@
 .vercel
+
+# Quyền tạo bảng (token/DB URL) — tuyệt đối không commit
+.env
+
+# Bản kèm dữ liệu thật (người dùng, PIN hash, ảnh) — không commit khi repo public
+index_seed*.html
+*.local.html
+SMED_backup_*.json
