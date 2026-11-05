@@ -504,10 +504,69 @@ function shiftWindowContains(shift, t){
   const s=sh*60+sm, e=eh*60+em;
   return s<e ? (m>=s && m<e) : (m>=s || m<e);
 }
+function sha256_js(str){
+  function rightRotate(v, a){ return (v >>> a) | (v << (32 - a)); }
+  const mathPow = Math.pow, maxWord = mathPow(2, 32);
+  let result = '', words = [];
+  let ascii = unescape(encodeURIComponent(str));
+  const bitLen = ascii.length * 8;
+  let hash = sha256_js.h = sha256_js.h || [];
+  let k = sha256_js.k = sha256_js.k || [];
+  let primeCounter = k.length;
+  const isComposite = {};
+  for(let c = 2; primeCounter < 64; c++){
+    if(!isComposite[c]){
+      for(let i = 0; i < 313; i += c) isComposite[i] = c;
+      hash[primeCounter] = (mathPow(c, 0.5) * maxWord) | 0;
+      k[primeCounter++] = (mathPow(c, 1 / 3) * maxWord) | 0;
+    }
+  }
+  ascii += '\x80';
+  while(ascii.length % 64 - 56) ascii += '\x00';
+  for(let i = 0; i < ascii.length; i++) words[i >> 2] |= ascii.charCodeAt(i) << ((3 - i % 4) * 8);
+  words[words.length] = ((bitLen / maxWord) | 0);
+  words[words.length] = bitLen;
+  hash = [...hash];
+  for(let j = 0; j < words.length;){
+    const w = words.slice(j, j += 16);
+    const oldHash = hash;
+    hash = hash.slice(0, 8);
+    for(let i = 0; i < 64; i++){
+      const w15 = w[i - 15], w2 = w[i - 2];
+      const a = hash[0], e = hash[4];
+      const t1 = hash[7]
+        + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+        + ((e & hash[5]) ^ ((~e) & hash[6]))
+        + k[i]
+        + (w[i] = (i < 16) ? w[i] : (
+            w[i - 16]
+            + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+            + w[i - 7]
+            + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+          ) | 0
+        );
+      const t2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+        + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash = [(t1 + t2) | 0].concat(hash);
+      hash[4] = (hash[4] + t1) | 0;
+    }
+    for(let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for(let i = 0; i < 8; i++){
+    for(let j = 3; j >= 0; j--){
+      const b = (hash[i] >> (8 * j)) & 255;
+      result += (b < 16 ? '0' : '') + b.toString(16);
+    }
+  }
+  return result;
+}
 async function hashPin(userId, pin){
   const txt = 'smed|'+userId+'|'+pin;
   try{
     if(crypto?.subtle){ const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt)); return 'sha256:'+[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+  }catch(e){}
+  try{
+    return 'sha256:' + sha256_js(txt);
   }catch(e){}
   let h=2166136261; for(let i=0;i<txt.length;i++){h^=txt.charCodeAt(i);h=Math.imul(h,16777619);} return 'fnv:'+(h>>>0).toString(16);
 }
