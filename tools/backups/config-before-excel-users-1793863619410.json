@@ -1,0 +1,988 @@
+{
+  "at": "2026-11-05T14:26:59",
+  "data": {
+    "kpi": {
+      "endEvent": "firstPairApproved",
+      "overStdTolPct": 20,
+      "targetTolerancePct": 0
+    },
+    "site": {
+      "id": "S1",
+      "name": "VIETNAM SAMHO",
+      "timezone": "Asia/Ho_Chi_Minh"
+    },
+    "lines": [
+      {
+        "id": "L01",
+        "name": "STT_A1",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L02",
+        "name": "STT_A2",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L03",
+        "name": "STT_A3",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L04",
+        "name": "STT_A4",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L05",
+        "name": "STT_A5",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L06",
+        "name": "STT_A6",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L07",
+        "name": "STT_A7",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L08",
+        "name": "STT_A8",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L09",
+        "name": "STT_A9",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L10",
+        "name": "STT_A10",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L11",
+        "name": "STT_A11",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L12",
+        "name": "STT_A12",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L13",
+        "name": "STT_A13",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      },
+      {
+        "id": "L14",
+        "name": "STT_A14",
+        "floor": "2",
+        "shifts": [
+          "S1",
+          "S2"
+        ],
+        "status": "Active",
+        "building": "A"
+      }
+    ],
+    "users": [
+      {
+        "id": "U-D-PROD",
+        "code": "PS01",
+        "name": "Trần Văn Hùng",
+        "role": "prod",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:962719e8bf8d52cb2461d3250f95bf48476efdab2cd6275c355d18337ac009a0",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-LEAN",
+        "code": "PS02",
+        "name": "Nguyễn Thị Mai",
+        "role": "prod",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:c9c4e8a0c67a414fa3af9ae7253087f060286791cd0f17fb98930fc67aa901c0",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-LL1",
+        "code": "TL01",
+        "name": "Lê Văn Tâm",
+        "role": "leader",
+        "lines": [
+          "L01"
+        ],
+        "active": true,
+        "pinHash": "sha256:e5a10035b4dd652c3f3484d31fc4a4d2495bba327e1a5601814fc3eacd339ab4",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-LL2",
+        "code": "TL02",
+        "name": "Phạm Thị Hoa",
+        "role": "leader",
+        "lines": [
+          "L02"
+        ],
+        "active": true,
+        "pinHash": "sha256:8844f24939dfc469708f6bdac2d2bbac3150bacb90679a3b4d2fd140dfc7c2c1",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-IE",
+        "code": "IE01",
+        "name": "Võ Minh Khoa",
+        "role": "ie",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:5febcb82e3b0e69ecd50160e488c55e59cef8d0f6bdac58b760b58768eb45c65",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-TECH",
+        "code": "MT01",
+        "name": "Đặng Quốc Bảo",
+        "role": "tech",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:ea3644037e8330ae65aa56053043c5ba674fddf8a40b0b0f7cf9985730fb7571",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-QA",
+        "code": "QA01",
+        "name": "Huỳnh Thị Lan",
+        "role": "qa",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:817badf64423a45c4e9ac8c09bc68c3156c7bb9f6ccb29a36f683bb9703794d4",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-MAT",
+        "code": "WS01",
+        "name": "Bùi Văn Lộc",
+        "role": "material",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:890651352050fa2d2f2fb0f80d6971e10e34dbf4349172613bb7181b37ec8a31",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-D-WS2",
+        "code": "WS02",
+        "name": "Ngô Thị Thu",
+        "role": "material",
+        "lines": [
+          "L01"
+        ],
+        "active": true,
+        "pinHash": "sha256:34c427bac9f0691e0c7f27508bd9738e5272ac676afc0688e1d68cf4437ee2ee",
+        "createdAt": 1793852871283
+      },
+      {
+        "id": "U-ADMIN",
+        "code": "LM001",
+        "name": "Nguyễn Minh Quang",
+        "role": "admin",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:88a9ad552cd7186117b3484f428f2ce2a11b82e6dff10f2e7346c480ae6eccfb",
+        "createdAt": 1793161760701,
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QOIQKKJAB",
+        "code": "LL01",
+        "name": "Chau Khách Huy",
+        "role": "leader",
+        "lines": [
+          "L01"
+        ],
+        "active": true,
+        "pinHash": "sha256:6183993c291f9e8b8b26d19ea684d4e72d496dc04ee571cd724c38abd27aef46",
+        "createdAt": 1793169263332,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QTZEJ17CP",
+        "code": "LN001",
+        "name": "Trần Hải Quang",
+        "role": "lean",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:deb4214774abb4c2d6a7344bfa8e73b2c38901fa3b89a3fa9a3f2dfc86b8c95c",
+        "createdAt": 1793169518203,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5J195R",
+        "code": "LL003",
+        "name": "Ngô Trần Phương Nguyên",
+        "role": "leader",
+        "lines": [
+          "L03"
+        ],
+        "active": true,
+        "pinHash": "sha256:04275521de89d6d7f170a3069c20ae724704d070f3eebbaeff50b8174deda80f",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5J6ROQ",
+        "code": "GM001",
+        "name": "Phạm Ngọc Minh",
+        "role": "mgmt",
+        "lines": [
+          "*"
+        ],
+        "active": true,
+        "pinHash": "sha256:490dca6a064d09137fd1a07ced30a07ea0411cb69d2f50f7f47ae8b4ac3feb81",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5J792T",
+        "code": "LL006",
+        "name": "Vương Quốc Bảo",
+        "role": "leader",
+        "lines": [
+          "L06"
+        ],
+        "active": true,
+        "pinHash": "sha256:4c971ffeb68714b9427f810297fa7c1135328776bfd3e5134b1201977e5080ea",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5J7TPV",
+        "code": "LL002",
+        "name": "Trần Thị Mỹ Diễm",
+        "role": "leader",
+        "lines": [
+          "L02"
+        ],
+        "active": true,
+        "pinHash": "sha256:a819a3bf6d3034d8af9f413918b3ee30b2d0d882383e056290e001a8cdfc9bf2",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5JCJW6",
+        "code": "LL004",
+        "name": "Nguyễn Thanh Bình",
+        "role": "leader",
+        "lines": [
+          "L04"
+        ],
+        "active": true,
+        "pinHash": "sha256:75e21e9cb92c13737b6eb2aad2f24a134f67bce15ef64cdcfc548d9f77bbd432",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5JEK9S",
+        "code": "LL001",
+        "name": "Nguyễn Thị Thanh Trang",
+        "role": "leader",
+        "lines": [
+          "L01"
+        ],
+        "active": true,
+        "pinHash": "sha256:64a2d6c8f0898aa4361686f2d7d7f5a3c912158bfd62da99a5f704c9f10888e6",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5JJQN2",
+        "code": "PM001",
+        "name": "Hoàng Minh Chiến",
+        "role": "prod",
+        "lines": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "active": true,
+        "pinHash": "sha256:c4f289e0c6b1e166397fe34e06bec6f09b6a3849f899e4848d75f66a583c30ef",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5JLR4T",
+        "code": "LL005",
+        "name": "Nguyễn Thế Quân",
+        "role": "leader",
+        "lines": [
+          "L05"
+        ],
+        "active": true,
+        "pinHash": "sha256:018914627eefa4272fcf4aae4c5e7ae89b2d70c0dc0972cf37ee14e62117ff42",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5JNIAT",
+        "code": "PM002",
+        "name": "Nguyễn Thanh Phương",
+        "role": "prod",
+        "lines": [
+          "L07",
+          "L08",
+          "L09"
+        ],
+        "active": true,
+        "pinHash": "sha256:b0ec022273bc5f161cd9812ed5ab92a5b1c37ceca730c7b13b3a42187d585777",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5JPLIV",
+        "code": "IE002",
+        "name": "Đoàng Huỳnh Minh Trung",
+        "role": "ie",
+        "lines": [
+          "L07",
+          "L08",
+          "L09"
+        ],
+        "active": true,
+        "pinHash": "sha256:39919b6d2bd56d8e5a1e15a5898494a452b3679db73503ec5d5e1f3d3141a146",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5JXLN5",
+        "code": "IE001",
+        "name": "Phạm Duy Hậu",
+        "role": "ie",
+        "lines": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "active": true,
+        "pinHash": "sha256:6d92b8fd96dca9b2536d58f7f4f4f5988e57822db6f47be26524bbcfd08fa141",
+        "createdAt": 1793169578791,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5K48YL",
+        "code": "OP002",
+        "name": "Vũ Thị Kim",
+        "role": "operator",
+        "lines": [
+          "L01"
+        ],
+        "active": true,
+        "pinHash": "sha256:5e0c0d3d6f299c8c03cab2a8e5422c071888617d68a9747345f0380b73b1e0fd",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5K5GDT",
+        "code": "QA001",
+        "name": "Huỳnh Thị Lan",
+        "role": "qa",
+        "lines": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "active": true,
+        "pinHash": "sha256:cbab0397a16509fc50d31f231e105a23fb59b91332db3fb5995550349192aafe",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5K8NPY",
+        "code": "TE003",
+        "name": "Dương Văn Lực",
+        "role": "tech",
+        "lines": [
+          "L07",
+          "L08",
+          "L09"
+        ],
+        "active": true,
+        "pinHash": "sha256:336e4739f400e1e3d68c4a5371be87cd20d293b45b0c3c0108265d09c4f5b360",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5K8PL2",
+        "code": "OP001",
+        "name": "Ngô Thị Thu",
+        "role": "operator",
+        "lines": [
+          "L01"
+        ],
+        "active": true,
+        "pinHash": "sha256:fdc2e65fa6b3a68c2645ca00aa9d7a206470b9badf7d6e368a33cf6600011aad",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5KA6PK",
+        "code": "MH002",
+        "name": "Châu Văn Toàn",
+        "role": "material",
+        "lines": [
+          "L07",
+          "L08",
+          "L09"
+        ],
+        "active": true,
+        "pinHash": "sha256:88c864a2949a8785e611aae3e9aa876e4abadcae6e56889aaa663bade851125f",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5KAMMA",
+        "code": "QA002",
+        "name": "Phan Thị Thu",
+        "role": "qa",
+        "lines": [
+          "L07",
+          "L08",
+          "L09"
+        ],
+        "active": true,
+        "pinHash": "sha256:02a9dc0b9d833c5f676879d8c5640a379de2ed6631ce3c70eff7bb59d748f306",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5KAX72",
+        "code": "TE002",
+        "name": "Ngô Văn Thịnh",
+        "role": "tech",
+        "lines": [
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "active": true,
+        "pinHash": "sha256:19a8768eb9910603e1f48f577b415d31fe5c0dd416af51d80e69b31dc19e155c",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5KBR13",
+        "code": "LL008",
+        "name": "Võ Thị Thủy Tiên",
+        "role": "leader",
+        "lines": [
+          "L08"
+        ],
+        "active": true,
+        "pinHash": "sha256:018d28c43994c0cd9c037fc58ccc918beff6770cc362c25dba7a59a02b03bd7b",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5KEPEN",
+        "code": "LL007",
+        "name": "Trương Thị Cẩm Tú",
+        "role": "leader",
+        "lines": [
+          "L07"
+        ],
+        "active": true,
+        "pinHash": "sha256:e079e65c8a16b6a4a03ba5b4731778baa50d42ac3b8c87b2fa60f8c3d26ff90c",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5KNS8V",
+        "code": "MH001",
+        "name": "Bùi Văn Lộc",
+        "role": "material",
+        "lines": [
+          "L01",
+          "L02",
+          "L03",
+          "L04",
+          "L05",
+          "L06"
+        ],
+        "active": true,
+        "pinHash": "sha256:584d3633cff20e66b841c17d00d9a9cb342b45b267faba3747c4aa19205176bd",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      },
+      {
+        "id": "U-QVA5KURXP",
+        "code": "TE001",
+        "name": "Nguyễn Thị Bích Liễu",
+        "role": "tech",
+        "lines": [
+          "L01",
+          "L02",
+          "L03"
+        ],
+        "active": true,
+        "pinHash": "sha256:cbfb38c247e327bcf9896bf5b4945c352b5d7516f9a51925f1ceb405b0f6abb4",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": true
+      },
+      {
+        "id": "U-QVA5KZ9RG",
+        "code": "LL009",
+        "name": "Lê Thị Hồng Vân",
+        "role": "leader",
+        "lines": [
+          "L09"
+        ],
+        "active": true,
+        "pinHash": "sha256:2c5a6ca73f9c4a4581404828fe0727bc1fb1523d4fb3ac6eac78107e966079b8",
+        "createdAt": 1793169578792,
+        "createdBy": "U-ADMIN",
+        "mustChangePin": false
+      }
+    ],
+    "alerts": {
+      "byLine": {},
+      "default": {
+        "maxTrials": 3,
+        "qaWaitMin": 15,
+        "prepWarnMin": 30,
+        "overTargetPct": 100,
+        "sopReviewDays": 14,
+        "warnTargetPct": 80
+      }
+    },
+    "schema": 1,
+    "shifts": [
+      {
+        "id": "S1",
+        "end": "14:00",
+        "name": "Ca 1",
+        "start": "06:00"
+      },
+      {
+        "id": "S2",
+        "end": "22:00",
+        "name": "Ca 2",
+        "start": "14:00"
+      },
+      {
+        "id": "S3",
+        "end": "06:00",
+        "name": "Ca 3",
+        "start": "22:00"
+      },
+      {
+        "id": "S4",
+        "end": "16:00",
+        "name": "Hành Chính",
+        "start": "07:00"
+      }
+    ],
+    "tooling": [],
+    "machines": [],
+    "createdAt": 1793607481411,
+    "standards": [
+      {
+        "id": "STD-001",
+        "rev": 1,
+        "note": "Giá trị minh họa – thay bằng baseline đo tại nhà máy",
+        "lineId": "*",
+        "modelA": "*",
+        "modelB": "*",
+        "status": "Approved",
+        "targetMin": 60,
+        "approvedBy": "(mặc định – cần IE/Lean xác nhận)",
+        "baselineMin": 90,
+        "effectiveFrom": "2026-01-01"
+      }
+    ],
+    "delayCodes": [
+      {
+        "code": "MAT01",
+        "owner": "Material",
+        "reason": "Thiếu nguyên vật liệu/phụ liệu"
+      },
+      {
+        "code": "TLS01",
+        "owner": "Line/Tooling",
+        "reason": "Không tìm thấy cữ gá/tooling"
+      },
+      {
+        "code": "TEC01",
+        "owner": "Technical",
+        "reason": "Chờ kỹ thuật"
+      },
+      {
+        "code": "MAC01",
+        "owner": "Maintenance/Technical",
+        "reason": "Máy lỗi hoặc chưa sẵn sàng"
+      },
+      {
+        "code": "QA01",
+        "owner": "QA",
+        "reason": "Chờ QA kiểm tra/phê duyệt"
+      },
+      {
+        "code": "DOC01",
+        "owner": "IE/Technical",
+        "reason": "Thiếu tech pack/tài liệu"
+      },
+      {
+        "code": "HR01",
+        "owner": "Production/HR",
+        "reason": "Thiếu người/kỹ năng chưa phù hợp"
+      },
+      {
+        "code": "LAY01",
+        "owner": "Production/IE",
+        "reason": "Di chuyển hoặc điều chỉnh layout"
+      },
+      {
+        "code": "SET01",
+        "owner": "Technical",
+        "reason": "Điều chỉnh máy/thông số"
+      },
+      {
+        "code": "TRI01",
+        "owner": "QA/Technical",
+        "reason": "Thử mẫu không đạt, cần sửa"
+      },
+      {
+        "code": "OTH01",
+        "owner": "Owner được chỉ định",
+        "reason": "Khác – bắt buộc ghi chú"
+      }
+    ],
+    "defectCodes": [
+      {
+        "code": "D01",
+        "name": "Bỏ mũi / sót mũi",
+        "severity": "Major"
+      },
+      {
+        "code": "D02",
+        "name": "Mật độ mũi (SPI) sai",
+        "severity": "Major"
+      },
+      {
+        "code": "D03",
+        "name": "Đường may lệch / không đều",
+        "severity": "Minor"
+      },
+      {
+        "code": "D04",
+        "name": "Nhăn / gợn mũ giày",
+        "severity": "Minor"
+      },
+      {
+        "code": "D05",
+        "name": "Sai màu chỉ / sai chỉ",
+        "severity": "Critical"
+      },
+      {
+        "code": "D06",
+        "name": "Lệch đối xứng trái/phải",
+        "severity": "Major"
+      },
+      {
+        "code": "D07",
+        "name": "Bẩn / dấu bút / dầu máy",
+        "severity": "Minor"
+      },
+      {
+        "code": "D08",
+        "name": "Thủng / rách vật liệu",
+        "severity": "Critical"
+      }
+    ],
+    "deletedUsers": {},
+    "sessionHours": 10,
+    "stableCriteria": {
+      "byLine": {},
+      "default": {
+        "maxDefects": 0,
+        "consecutive": 2,
+        "intervalMin": 30,
+        "minOutputPct": 90
+      }
+    },
+    "activityLibrary": [
+      {
+        "id": "A01",
+        "name": "Dọn bán thành phẩm & vật tư model A",
+        "type": "Internal",
+        "stdMin": 8
+      },
+      {
+        "id": "A02",
+        "name": "Thay kim, chỉ theo spec model B",
+        "type": "Internal",
+        "stdMin": 10
+      },
+      {
+        "id": "A03",
+        "name": "Thay cữ gá / folder / chân vịt",
+        "type": "Internal",
+        "stdMin": 12
+      },
+      {
+        "id": "A04",
+        "name": "Chỉnh thông số máy (SPI, lực nén)",
+        "type": "Internal",
+        "stdMin": 10
+      },
+      {
+        "id": "A05",
+        "name": "Di chuyển / đổi máy theo routing",
+        "type": "Internal",
+        "stdMin": 15
+      },
+      {
+        "id": "A06",
+        "name": "Bố trí lại layout & vị trí vật tư",
+        "type": "Internal",
+        "stdMin": 10
+      },
+      {
+        "id": "A07",
+        "name": "Hướng dẫn thao tác model B cho công nhân",
+        "type": "Internal",
+        "stdMin": 10
+      },
+      {
+        "id": "A08",
+        "name": "May mẫu đầu (first pair)",
+        "type": "Internal",
+        "stdMin": 12
+      }
+    ],
+    "checklistTemplate": [
+      {
+        "id": "CH-01",
+        "cat": "Material",
+        "code": "D01",
+        "desc": "Chuẩn bị vật tư model B",
+        "name": "Bỏ mũi / sót mũi",
+        "type": "External",
+        "critical": true,
+        "severity": "Major",
+        "ownerRole": "material",
+        "acceptance": "Đúng mã, màu, size và đủ số lượng",
+        "dueOffsetMin": 60
+      },
+      {
+        "id": "CH-02",
+        "cat": "Machine",
+        "code": "D02",
+        "desc": "Chuẩn bị cữ gá, chân vịt",
+        "name": "Mật độ mũi (SPI) sai",
+        "type": "External",
+        "critical": true,
+        "severity": "Major",
+        "ownerRole": "tech",
+        "acceptance": "Đúng loại, đủ số lượng, sẵn sàng",
+        "dueOffsetMin": 45
+      },
+      {
+        "id": "CH-03",
+        "cat": "Machine",
+        "code": "D03",
+        "desc": "Chuẩn bị kim và chỉ",
+        "name": "Đường may lệch / không đều",
+        "type": "External",
+        "critical": true,
+        "severity": "Minor",
+        "ownerRole": "leader",
+        "acceptance": "Đúng quy cách",
+        "dueOffsetMin": 45
+      },
+      {
+        "id": "CH-04",
+        "cat": "Tooling",
+        "code": "D04",
+        "desc": "Xác nhận SOP và mẫu chuẩn",
+        "name": "Nhăn / gợn mũ giày",
+        "type": "External",
+        "critical": true,
+        "severity": "Minor",
+        "ownerRole": "ie",
+        "acceptance": "Tài liệu và mẫu đã được phê duyệt",
+        "dueOffsetMin": 60
+      },
+      {
+        "id": "CH-05",
+        "cat": "People",
+        "code": "D05",
+        "desc": "Xác nhận nhân lực Model B",
+        "name": "Sai màu chỉ / sai chỉ",
+        "type": "External",
+        "critical": true,
+        "severity": "Critical",
+        "ownerRole": "leader",
+        "acceptance": "Đủ người, đúng kỹ năng",
+        "dueOffsetMin": 30
+      },
+      {
+        "id": "CH-06",
+        "cat": "Quality",
+        "code": "D06",
+        "desc": "Chuẩn bị tiêu chuẩn kiểm tra",
+        "name": "Lệch đối xứng trái/phải",
+        "type": "External",
+        "critical": true,
+        "severity": "Major",
+        "ownerRole": "qa",
+        "acceptance": "Có tiêu chuẩn và người kiểm tra",
+        "dueOffsetMin": 30
+      },
+      {
+        "id": "CH-07",
+        "cat": "Layout",
+        "code": "D07",
+        "desc": "Chuẩn bị vị trí máy và khay WIP",
+        "name": "Bẩn / dấu bút / dầu máy",
+        "type": "External",
+        "critical": true,
+        "severity": "Minor",
+        "ownerRole": "ie",
+        "acceptance": "Layout đúng, lối đi thông thoáng",
+        "dueOffsetMin": 30
+      }
+    ],
+    "ideDelegateStandard": false
+  }
+}

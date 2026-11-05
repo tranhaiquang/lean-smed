@@ -1522,7 +1522,8 @@ function Login(){
 function ChangePin({u}){
   const [a,setA]=useState(''); const [b,setB]=useState('');
   const save=async()=>{ if(!/^\d{4,8}$/.test(a)) return toast('PIN gồm 4–8 chữ số.','bad'); if(a!==b) return toast('PIN nhập lại không khớp.','bad'); if(a==='0000'||a==='1234') return toast('Chọn PIN khác giá trị mặc định.','bad');
-    const users=(Store.config.users||[]).map(x=>x.id===u.id?{...x,pinHash:'',mustChangePin:false}:x); const h=await hashPin(u.id,a); users.find(x=>x.id===u.id).pinHash=h;
+    if(u.targetPinHash && await hashPin(u.id,a)!==u.targetPinHash) return toast('PIN mới phải là mã cá nhân của bạn.','bad');
+    const users=(Store.config.users||[]).map(x=>x.id===u.id?{...x,pinHash:'',mustChangePin:false,targetPinHash:null}:x); const h=await hashPin(u.id,a); users.find(x=>x.id===u.id).pinHash=h;
     await Store.updateConfig({users}); logGlobal('user.pin', u.id, {}); toast('Đã đổi PIN','ok'); };
   return html`<div class="login"><div class="login-card"><h2>Đổi PIN lần đầu</h2><div class="muted">${u.name} · ${roleName(u.role)}</div>
     <${Field} label="PIN mới" req><input class="inp" id="cp-a" type="password" inputmode="numeric" value=${a} onInput=${e=>setA(e.target.value)}/><//>
