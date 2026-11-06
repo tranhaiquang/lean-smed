@@ -96,6 +96,22 @@ a{color:var(--info)}
   /* Phones: raw form fields ≥16px so Safari does not auto-zoom on focus */
   .inp,select.inp,textarea.inp{font-size:16px}
 }
+@media (max-width:640px){
+  /* Phone layout: stack grids, keep tables scrolling inside their wrapper */
+  .g2,.g3,.g4{grid-template-columns:minmax(0,1fr)!important}
+  .grid[style*="grid-template-columns"]{grid-template-columns:minmax(0,1fr)!important}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .tbl-wrap{max-width:100%;-webkit-overflow-scrolling:touch}
+  .tbl th,.tbl td{padding:6px 8px;font-size:12px}
+  .topbar{flex-wrap:wrap}
+  .topbar .grow{flex:1 1 100%;order:3}
+  .topbar .grow .inp{max-width:none!important}
+  .card{padding:12px}
+  .card-h{flex-direction:column;align-items:stretch}
+  .modal,.modal.wide{width:calc(100vw - 24px)}
+  .btn{white-space:normal;text-align:center}
+  .row-sb{flex-direction:column;align-items:stretch}
+}
 
 /* Surfaces */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
