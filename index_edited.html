@@ -40,7 +40,8 @@
   --c-ext:#69a4e6; --c-int:#f06a5f; --c-wait:#e9a23b; --c-qa:#b18ae6; --c-ramp:#3fbf83;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;overflow-x:clip}
+img,svg,video,table,iframe{max-width:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--nav)}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -92,6 +93,8 @@ a{color:var(--info)}
   .hide-sm{display:none}
   .content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   .topbar{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  /* Phones: raw form fields ≥16px so Safari does not auto-zoom on focus */
+  .inp,select.inp,textarea.inp{font-size:16px}
 }
 
 /* Surfaces */
@@ -234,8 +237,8 @@ table.tbl{border-collapse:collapse;width:100%;font-size:13px}
 .empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
 .photo-row{display:flex;gap:6px;flex-wrap:wrap}
 .photo-row img{width:64px;height:64px;object-fit:cover;border-radius:5px;border:1px solid var(--line);cursor:zoom-in}
-.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:13px}
-.kv dt{color:var(--ink-3)} .kv dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.kv{display:grid;grid-template-columns:minmax(0,max-content) 1fr;gap:4px 14px;font-size:13px}
+.kv dt{color:var(--ink-3);overflow-wrap:anywhere} .kv dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
 .diff-a{background:var(--bad-soft)} .diff-b{background:var(--ok-soft)}
 .loader{min-height:100%;display:grid;place-items:center;background:var(--nav);color:var(--nav-ink);font-family:var(--f-display);font-size:22px;letter-spacing:.06em}
 .sticky-actions{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding:10px 0 calc(10px + env(safe-area-inset-bottom,0px));z-index:20}
