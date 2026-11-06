@@ -1,0 +1,79 @@
+{
+  "id": "M-7IJ04X4UY",
+  "code": "860",
+  "name": "860",
+  "status": "Active",
+  "article": "yy",
+  "customer": "NB",
+  "createdAt": 1793258003380,
+  "createdBy": "U-ADMIN",
+  "revisions": {
+    "R7IJ04H06M": {
+      "key": "R7IJ04H06M",
+      "ops": [
+        {
+          "op": "fds",
+          "seq": 10,
+          "spi": "fds",
+          "skill": "kj",
+          "needle": "fds",
+          "opCode": "fds",
+          "thread": "fds",
+          "tooling": "hgf",
+          "stitchType": "gfdg",
+          "machineType": "fds"
+        },
+        {
+          "op": "fd",
+          "seq": 20,
+          "spi": "fds",
+          "skill": "kj",
+          "needle": "fds",
+          "opCode": "fsd",
+          "thread": "fd",
+          "tooling": "ghgf",
+          "stitchType": "gfd",
+          "machineType": "fds"
+        },
+        {
+          "op": "sfds",
+          "seq": 30,
+          "spi": "fs",
+          "skill": "hgfhg",
+          "needle": "fds",
+          "opCode": "fds",
+          "thread": "sfds",
+          "tooling": "jh",
+          "stitchType": "gdf",
+          "machineType": "fds"
+        }
+      ],
+      "rev": "A",
+      "notes": "",
+      "layout": {
+        "skill": "dsfsdfsd",
+        "version": "jg",
+        "workers": 343
+      },
+      "status": "Draft",
+      "qcPoints": [
+        {
+          "id": "QC7J7LYFSI4",
+          "name": "sfhgfs",
+          "spec": "ghs",
+          "method": "jhg"
+        },
+        {
+          "id": "QC7J86LI1JX",
+          "name": "hgs",
+          "spec": "hgsf",
+          "method": "jhf"
+        }
+      ],
+      "createdAt": 1793258003380,
+      "createdBy": "U-ADMIN",
+      "updatedAt": 1793258092452,
+      "updatedBy": "U-ADMIN"
+    }
+  }
+}
