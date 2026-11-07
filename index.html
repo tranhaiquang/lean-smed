@@ -1,4 +1,4 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>SMED Changeover</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -3160,14 +3160,16 @@ async function saveCfg(key, value, label){
   logGlobal('config.'+key, 'config', {before: Array.isArray(before)?`${before.length} dòng`:before, after: Array.isArray(value)?`${value.length} dòng`:value});
   toast('Đã lưu '+(label||key),'ok');
 }
-function CfgList({k, cols, label, perm='config.lean', newRow, validate, def}){
+function CfgList({k, cols, label, perm='config.lean', newRow, validate, filter, def}){
   const cur=()=>Store.config[k]?.length?Store.config[k]:(def||[]);
   const [rows,setRows]=useState(()=>clone(cur()));
   const dirty=JSON.stringify(rows)!==JSON.stringify(cur());
   const ok=can(perm);
   const save=()=>{ const err=validate&&validate(rows); if(err) return toast(err,'bad'); saveCfg(k, rows, label); };
+  const view = filter ? rows.filter(filter) : rows;
+  const onViewChange = nextView => { if(!filter) return setRows(nextView); let i=0; const merged=[]; for(const r of rows){ if(filter(r)){ if(i<nextView.length) merged.push(nextView[i++]); } else merged.push(r); } while(i<nextView.length) merged.push(nextView[i++]); setRows(merged); };
   return html`<div class="card"><div class="card-h"><h3>${label}</h3>${ok?html`<div class="row">${dirty?html`<span class="small t-wait">Chưa lưu</span><button class="btn btn-sm btn-ghost" onClick=${()=>setRows(clone(cur()))}>Hoàn tác</button>`:''}<button class="btn btn-primary btn-sm" disabled=${!dirty} onClick=${save}>Lưu</button></div>`:html`<span class="small muted">Chỉ xem</span>`}</div>
-    <${RowsEditor} cols=${cols} rows=${rows} onChange=${setRows} readOnly=${!ok} newRow=${newRow}/></div>`;
+    <${RowsEditor} cols=${cols} rows=${view} onChange=${onViewChange} readOnly=${!ok} newRow=${newRow}/></div>`;
 }
 const uniq = (key,label) => rows => { const s=new Set(); for(const r of rows){ const v=String(r[key]||'').trim(); if(!v) return `${label} không được trống`; if(s.has(v)) return `${label} trùng: ${v}`; s.add(v); } return null; };
 
@@ -3179,15 +3181,16 @@ function Settings(){
     {v:'audit',l:'Audit log',p:null},{v:'data',l:'Sao lưu & dữ liệu',p:null},{v:'me',l:'Tài khoản của tôi',p:null}];
   const [t,setT]=useState(can('config.system')?'users':can('config.lean')?'codes':'me');
   return html`<div class="col"><h1>Cài đặt</h1><${Tabs} value=${t} onChange=${setT} tabs=${tabs}/>
+    <div class="col" key=${t}>
     ${t==='users'?html`<${UsersAdmin}/>`:''}
     ${t==='site'?html`<${SiteAdmin}/>`:''}
     ${t==='codes'?html`<div class="col"><${CfgList} k="unplannedReasons" def=${DEFAULT_UNPLANNED} label="Lý do changeover đột xuất (không có kế hoạch)" validate=${uniq('code','Code')} newRow=${i=>({code:'UNP'+pad(i+1)})} cols=${[{k:'code',l:'Code',w:90},{k:'reason',l:'Lý do',w:320}]}/>
       <${CfgList} k="delayCodes" label="Delay reason (Phụ lục A)" validate=${uniq('code','Code')} cols=${[{k:'code',l:'Code',w:90},{k:'reason',l:'Lý do',w:280},{k:'owner',l:'Owner group',w:160}]}/>
       <${CfgList} k="defectCodes" label="Danh mục mã lỗi chất lượng" validate=${uniq('code','Mã lỗi')} cols=${[{k:'code',l:'Mã',w:80},{k:'name',l:'Mô tả',w:260},{k:'severity',l:'Severity',type:'select',options:['Critical','Major','Minor'].map(v=>({v,l:v}))}]}/></div>`:''}
-    ${t==='check'?html`<div class="col"><div class="note small">Checklist mẫu được sao chép vào mỗi changeover mới. Hạn = giờ dừng chuyền − số phút. Hạng mục Critical không được bỏ qua nếu chưa có exception được duyệt.</div>
-      <${CfgList} k="checklistTemplate" label="Checklist trước changeover (Phụ lục B)" validate=${uniq('id','ID')} newRow=${i=>({id:'T'+pad(i+1), type:'External', cat:'Material', ownerRole:'leader', dueOffsetMin:30})} cols=${[{k:'id',l:'ID',w:60},{k:'cat',l:'Nhóm',type:'select',options:CATEGORIES.map(c=>({v:c,l:CAT_VN[c]}))},{k:'desc',l:'Hạng mục',w:220},{k:'type',l:'Loại',type:'select',options:['External','Internal','Verification'].map(v=>({v,l:v}))},{k:'ownerRole',l:'Owner',type:'select',options:Object.entries(ROLES).map(([v,l])=>({v,l}))},{k:'critical',l:'Critical',type:'check'},{k:'dueOffsetMin',l:'Hạn (phút trước dừng)',type:'number',w:90},{k:'acceptance',l:'Tiêu chí chấp nhận',w:240}]}/></div>`:''}
-    ${t==='acts'?html`<div class="col"><div class="note small">Thư viện hoạt động chuẩn dùng khi changeover chưa gắn SOP. Nếu SOP của model B đã duyệt, màn hình bấm giờ dùng các bước trong SOP.</div>
-      <${CfgList} k="activityLibrary" label="Thư viện hoạt động chuẩn" validate=${uniq('id','ID')} newRow=${i=>({id:'A'+pad(i+1), type:'Internal'})} cols=${[{k:'id',l:'ID',w:60},{k:'name',l:'Hoạt động',w:280},{k:'type',l:'Loại',type:'select',options:Object.keys(ACT_TYPES).map(v=>({v,l:ACT_TYPES[v].l}))},{k:'stdMin',l:'Chuẩn (phút)',type:'number',w:90}]}/></div>`:''}
+    ${t==='check'?html`<div class="col"><div class="note small">Checklist mẫu chỉ hiển thị nhiệm vụ External. Checklist mẫu được sao chép vào mỗi changeover mới. Hạn = giờ dừng chuyền − số phút. Hạng mục Critical không được bỏ qua nếu chưa có exception được duyệt.</div>
+      <${CfgList} k="checklistTemplate" label="Checklist trước changeover (Phụ lục B)" validate=${uniq('id','ID')} filter=${r=>{const t=String(r.type||'').trim().toLowerCase(); return !t || t==='external';}} newRow=${i=>({id:'T'+pad(i+1), type:'External', cat:'Material', ownerRole:'leader', dueOffsetMin:30})} cols=${[{k:'id',l:'ID',w:60},{k:'cat',l:'Nhóm',type:'select',options:CATEGORIES.map(c=>({v:c,l:CAT_VN[c]}))},{k:'desc',l:'Hạng mục',w:220},{k:'type',l:'Loại',type:'select',options:['External','Internal','Verification'].map(v=>({v,l:v}))},{k:'ownerRole',l:'Owner',type:'select',options:Object.entries(ROLES).map(([v,l])=>({v,l}))},{k:'critical',l:'Critical',type:'check'},{k:'dueOffsetMin',l:'Hạn (phút trước dừng)',type:'number',w:90},{k:'acceptance',l:'Tiêu chí chấp nhận',w:240}]}/></div>`:''}
+    ${t==='acts'?html`<div class="col"><div class="note small">Thư viện chỉ hiển thị hoạt động Internal. Thư viện hoạt động chuẩn dùng khi changeover chưa gắn SOP. Nếu SOP của model B đã duyệt, màn hình bấm giờ dùng các bước trong SOP.</div>
+      <${CfgList} k="activityLibrary" label="Thư viện hoạt động chuẩn" validate=${uniq('id','ID')} filter=${r=>{const t=String(r.type||'').trim().toLowerCase(); return !t || t==='internal';}} newRow=${i=>({id:'A'+pad(i+1), type:'Internal', ownerRole:'leader'})} cols=${[{k:'id',l:'ID',w:60},{k:'name',l:'Hoạt động',w:280},{k:'type',l:'Loại',type:'select',options:Object.keys(ACT_TYPES).map(v=>({v,l:ACT_TYPES[v].l}))},{k:'ownerRole',l:'Owner',type:'select',options:Object.entries(ROLES).map(([v,l])=>({v,l}))},{k:'stdMin',l:'Chuẩn (phút)',type:'number',w:90}]}/></div>`:''}
     ${t==='std'?html`<${StandardsAdmin}/>`:''}
     ${t==='kpi'?html`<${KpiAdmin}/>`:''}
     ${t==='assets'?html`<div class="col"><${CfgList} k="machines" label="Máy" perm="model.edit" validate=${uniq('id','Machine ID')} cols=${[{k:'id',l:'Machine ID',w:100},{k:'type',l:'Loại máy',w:160},{k:'location',l:'Vị trí / chuyền',w:140},{k:'status',l:'Tình trạng',type:'select',options:['Sẵn sàng','Đang dùng','Bảo trì','Hỏng'].map(v=>({v,l:v}))},{k:'maint',l:'Mã bảo trì',w:120}]}/>
@@ -3196,6 +3199,7 @@ function Settings(){
     ${t==='audit'?html`<${AuditAdmin}/>`:''}
     ${t==='data'?html`<${DataAdmin}/>`:''}
     ${t==='me'?html`<${MyAccount}/>`:''}
+    </div>
   </div>`;
 }
 function UsersAdmin(){
