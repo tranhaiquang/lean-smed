@@ -40,7 +40,7 @@
   --c-ext:#69a4e6; --c-int:#f06a5f; --c-wait:#e9a23b; --c-qa:#b18ae6; --c-ramp:#3fbf83;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
-html,body{height:100%;overflow-x:clip}
+html,body{height:100%;overflow-x:clip;touch-action:pan-x pan-y}
 img,svg,video,table,iframe{max-width:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--nav)}
@@ -94,7 +94,7 @@ a{color:var(--info)}
   .content{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   .topbar{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   /* Phones: raw form fields ≥16px so Safari does not auto-zoom on focus */
-  .inp,select.inp,textarea.inp{font-size:16px}
+  input,select,textarea{font-size:16px!important}
 }
 @media (max-width:640px){
   /* Phone layout: stack grids, keep tables scrolling inside their wrapper */
@@ -295,7 +295,7 @@ details.box>div{padding:0 14px 14px}
 :root[data-ui="mobile"] .btn{min-height:44px}
 :root[data-ui="mobile"] .btn-sm{min-height:38px}
 :root[data-ui="mobile"] .inp,:root[data-ui="mobile"] select.inp{min-height:44px;font-size:16px}
-:root[data-ui="mobile"] .inp.sm{min-height:38px;font-size:15px}
+:root[data-ui="mobile"] .inp.sm{min-height:38px;font-size:16px}
 :root[data-ui="mobile"] h1{font-size:24px}
 :root[data-ui="mobile"] .card{padding:14px}
 :root[data-ui="mobile"] .modal{border-radius:12px}
